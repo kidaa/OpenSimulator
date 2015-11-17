@@ -66,6 +66,8 @@ namespace OpenSim.Services.HypergridService
 
         private static string m_ConfigName = "HGFriendsService";
 
+        private bool m_easyFriendship = false;
+
         public HGFriendsService(IConfigSource config, String configName, IFriendsSimConnector localSimConn)
         {
             if (m_FriendsLocalSimConnector == null)
@@ -106,6 +108,9 @@ namespace OpenSim.Services.HypergridService
 
                 m_FriendsSimConnector = new FriendsSimConnector();
 
+                m_easyFriendship = serverConfig.GetBoolean("EasyFriendship", false);
+                if (m_easyFriendship) m_log.DebugFormat("[HGFRIENDS SERVICE]: Enbale EasyFriendship");
+
                 m_log.DebugFormat("[HGFRIENDS SERVICE]: Starting...");
 
             }
@@ -140,22 +145,31 @@ namespace OpenSim.Services.HypergridService
                 if (finfo.Friend.StartsWith(friendID.ToString()))
                     return false;
             }
-            // Verified user session. But the user needs to confirm friendship when he gets home
-            if (verified)
-                return m_FriendsService.StoreFriend(friend.PrincipalID.ToString(), friend.Friend, 0);
 
-            // Does the reverted friendship exist? meaning that this user initiated the request
-            finfos = m_FriendsService.GetFriends(friendID);
             bool userInitiatedOffer = false;
-            foreach (FriendInfo finfo in finfos)
+
+            if (!m_easyFriendship)
             {
-                if (friend.Friend.StartsWith(finfo.PrincipalID.ToString()) && finfo.Friend.StartsWith(friend.PrincipalID.ToString()) && finfo.TheirFlags == -1)
+                // Verified user session. But the user needs to confirm friendship when he gets home
+                if (verified)
+                    return m_FriendsService.StoreFriend(friend.PrincipalID.ToString(), friend.Friend, 0);
+
+                // Does the reverted friendship exist? meaning that this user initiated the request
+                finfos = m_FriendsService.GetFriends(friendID);
+                foreach (FriendInfo finfo in finfos)
                 {
-                    userInitiatedOffer = true;
-                    // Let's delete the existing friendship relations that was stored
-                    m_FriendsService.Delete(friendID, finfo.Friend);
-                    break;
+                    if (friend.Friend.StartsWith(finfo.PrincipalID.ToString()) && finfo.Friend.StartsWith(friend.PrincipalID.ToString()) && finfo.TheirFlags == -1)
+                    {
+                        userInitiatedOffer = true;
+                        // Let's delete the existing friendship relations that was stored
+                        m_FriendsService.Delete(friendID, finfo.Friend);
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                userInitiatedOffer = true;
             }
 
             if (userInitiatedOffer)
@@ -166,6 +180,7 @@ namespace OpenSim.Services.HypergridService
                 ForwardToSim("ApproveFriendshipRequest", friendID, Util.UniversalName(first, last, url), "", friend.PrincipalID, "");
                 return true;
             }
+
             return false;
         }
 

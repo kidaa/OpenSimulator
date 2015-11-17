@@ -720,6 +720,10 @@
     GridService = "OpenSim.Services.GridService.dll:GridService"
     PresenceService = "OpenSim.Services.PresenceService.dll:PresenceService"
 
+    ;; EasyFriendship disable some security checks at making new friendships over the HG.
+    ;; With other words. Everyone who know how can make a friendship with you.
+    ;; You pay with a bit security but you can make normal friendships on any HG region without tp back to you home grid to accept it.
+    EasyFriendship = false;
 
 [HGInstantMessageService]
     LocalServiceModule  = "OpenSim.Services.HypergridService.dll:HGInstantMessageService"

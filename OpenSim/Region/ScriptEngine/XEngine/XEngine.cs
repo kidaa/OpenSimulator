@@ -110,6 +110,7 @@ namespace OpenSim.Region.ScriptEngine.XEngine
         private int m_ScriptFailCount; // Number of script fails since compile queue was last empty
         private string m_ScriptErrorMessage;
         private bool m_AppDomainLoading;
+        private bool m_AppDomainLoadingUserSepearated;
         private Dictionary<UUID,ArrayList> m_ScriptErrors =
                 new Dictionary<UUID,ArrayList>();
 
@@ -302,7 +303,7 @@ namespace OpenSim.Region.ScriptEngine.XEngine
             m_StackSize = m_ScriptConfig.GetInt("ThreadStackSize", 262144);
             m_SleepTime = m_ScriptConfig.GetInt("MaintenanceInterval", 10) * 1000;
             m_AppDomainLoading = m_ScriptConfig.GetBoolean("AppDomainLoading", true);
-
+            m_AppDomainLoadingUserSepearated = m_ScriptConfig.GetBoolean("AppDomainLoadingUserSepearated", true);
             m_EventLimit = m_ScriptConfig.GetInt("EventLimit", 30);
             m_KillTimedOutScripts = m_ScriptConfig.GetBoolean("KillTimedOutScripts", false);
             m_SaveTime = m_ScriptConfig.GetInt("SaveInterval", 120) * 1000;
@@ -310,6 +311,9 @@ namespace OpenSim.Region.ScriptEngine.XEngine
                 = m_ScriptConfig.GetInt("WaitForEventCompletionOnScriptStop", m_WaitForEventCompletionOnScriptStop);
 
             m_ScriptEnginesPath = m_ScriptConfig.GetString("ScriptEnginesPath", "ScriptEngines");
+
+            if (m_AppDomainLoading == false) m_log.Warn("[XEngine]: WARNING!!! AppDomainLoading is disabled. This make the region unstable and causes an high memory use.");
+            if (m_AppDomainLoadingUserSepearated == true) m_log.Warn("[XEngine]: Use a seperate AppDomain for eache user.");
 
             m_Prio = ThreadPriority.BelowNormal;
             switch (priority)
@@ -1308,12 +1312,25 @@ namespace OpenSim.Region.ScriptEngine.XEngine
                             AppDomain sandbox;
                             if (m_AppDomainLoading)
                             {
-                                sandbox = AppDomain.CreateDomain(
-                                                m_Scene.RegionInfo.RegionID.ToString(),
-                                                evidence, appSetup);
-                                sandbox.AssemblyResolve +=
-                                    new ResolveEventHandler(
-                                        AssemblyResolver.OnAssemblyResolve);
+                                if(m_AppDomainLoadingUserSepearated)
+                                {
+                                    sandbox = AppDomainUserHandler.getUserAppDomainByUUID(part.OwnerID);
+
+                                    if (sandbox == null)
+                                    {
+                                        sandbox = AppDomain.CreateDomain(m_Scene.RegionInfo.RegionID.ToString(),evidence, appSetup);
+                                        sandbox.AssemblyResolve += new ResolveEventHandler(AssemblyResolver.OnAssemblyResolve);
+                                        AppDomainUserHandler.saveUserAppDomain(part.OwnerID, sandbox);
+                                        m_log.InfoFormat("[XEngine]: Create new AppDomain for {0}", part.OwnerID);
+                                    }
+                                }else{
+                                    sandbox = AppDomain.CreateDomain(
+                                                    m_Scene.RegionInfo.RegionID.ToString(),
+                                                    evidence, appSetup);
+                                    sandbox.AssemblyResolve +=
+                                        new ResolveEventHandler(
+                                            AssemblyResolver.OnAssemblyResolve);
+                                }
                             }
                             else
                             {
@@ -1650,12 +1667,18 @@ namespace OpenSim.Region.ScriptEngine.XEngine
             if (m_AppDomains.ContainsKey(id))
             {
                 AppDomain domain = m_AppDomains[id];
+                bool unload = AppDomainUserHandler.removeUserAppDomain(domain);
+
                 m_AppDomains.Remove(id);
 
-                if (domain != AppDomain.CurrentDomain)
-                    AppDomain.Unload(domain);
-                domain = null;
-                // m_log.DebugFormat("[XEngine] Unloaded app domain {0}", id.ToString());
+                if (unload)
+                {
+
+                    if (domain != AppDomain.CurrentDomain)
+                        AppDomain.Unload(domain);
+                    domain = null;
+                    m_log.DebugFormat("[XEngine] Unloaded app domain {0}", id.ToString());
+                }
             }
         }
 

@@ -667,7 +667,7 @@ namespace OpenSim.Region.CoreModules.World.Warp3DMap
                 }
                 catch (Exception e)
                 {
-                    m_log.Warn(string.Format("[WARP 3D IMAGE MODULE]: Failed to decode asset {0}, exception  ", id), e);
+                    //m_log.Warn(string.Format("[WARP 3D IMAGE MODULE]: Failed to decode asset {0}, exception  ", id), e);
                 }                    
             }
 
@@ -785,10 +785,6 @@ namespace OpenSim.Region.CoreModules.World.Warp3DMap
                 }
                 catch (Exception ex)
                 {
-                    m_log.WarnFormat(
-                        "[WARP 3D IMAGE MODULE]: Error decoding JPEG2000 texture {0} ({1} bytes): {2}",
-                        textureID, j2kData.Length, ex.Message);
-
                     width = 0;
                     height = 0;
                     return new Color4(0.5f, 0.5f, 0.5f, 1.0f);

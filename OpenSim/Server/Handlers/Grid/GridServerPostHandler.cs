@@ -43,6 +43,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.ServiceAuth;
 using OpenSim.Framework.Servers.HttpServer;
 using OpenMetaverse;
+using System.Security.Cryptography;
 
 namespace OpenSim.Server.Handlers.Grid
 {

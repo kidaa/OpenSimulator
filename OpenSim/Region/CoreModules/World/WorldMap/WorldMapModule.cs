@@ -1566,7 +1566,7 @@ namespace OpenSim.Region.CoreModules.World.WorldMap
                             m_scene.RegionInfo.RegionID.ToString());
                         asset.Data = data;
                         asset.Description = m_scene.RegionInfo.RegionName;
-                        asset.Temporary = false;
+                        asset.Temporary = true;
                         asset.Flags = AssetFlags.Maptile;
 
                         // Store the new one
@@ -1597,7 +1597,7 @@ namespace OpenSim.Region.CoreModules.World.WorldMap
                     m_scene.RegionInfo.RegionID.ToString());
                 parcels.Data = overlay;
                 parcels.Description = m_scene.RegionInfo.RegionName;
-                parcels.Temporary = false;
+                parcels.Temporary = true;
                 parcels.Flags = AssetFlags.Maptile;
 
                 m_scene.AssetService.Store(parcels);

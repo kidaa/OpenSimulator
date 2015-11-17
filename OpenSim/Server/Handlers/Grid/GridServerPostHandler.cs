@@ -137,6 +137,28 @@ namespace OpenSim.Server.Handlers.Grid
             return FailureResult();
         }
 
+        /// <summary>
+        /// Gibt einen MD5 Hash als String zurück
+        /// </summary>
+        /// <param name="TextToHash">string der Gehasht werden soll.</param>
+        /// <returns>Hash als string.</returns>
+        private string GetMD5Hash(string TextToHash)
+        {
+            //Prüfen ob Daten übergeben wurden.
+            if ((TextToHash == null) || (TextToHash.Length == 0))
+            {
+                return string.Empty;
+            }
+
+            //MD5 Hash aus dem String berechnen. Dazu muss der string in ein Byte[]
+            //zerlegt werden. Danach muss das Resultat wieder zurück in ein string.
+            MD5 md5 = new MD5CryptoServiceProvider();
+            byte[] textToHash = Encoding.Default.GetBytes(TextToHash);
+            byte[] result = md5.ComputeHash(textToHash);
+
+            return System.BitConverter.ToString(result);
+        } 
+
         #region Method-specific handlers
 
         byte[] Register(Dictionary<string, object> request)
@@ -146,6 +168,19 @@ namespace OpenSim.Server.Handlers.Grid
                 UUID.TryParse(request["SCOPEID"].ToString(), out scopeID);
             else
                 m_log.WarnFormat("[GRID HANDLER]: no scopeID in request to register region");
+
+            if (!request.ContainsKey("GRIDAUTHCODE"))
+            {
+                return FailureResult("This grid can not be used by any opensim version.");
+            }
+            else
+            {
+                string AuthData = request["GRIDAUTHCODE"].ToString();
+                if (AuthData != GetMD5Hash(DateTime.Now.ToString("yyyyMM") + "001"))
+                {
+                    return FailureResult("Your OpenSim version is not up to date with the grid.");
+                }
+            }
 
             int versionNumberMin = 0, versionNumberMax = 0;
             if (request.ContainsKey("VERSIONMIN"))

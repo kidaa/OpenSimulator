@@ -38,6 +38,8 @@ using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using OpenSim.Server.Base;
 using OpenMetaverse;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace OpenSim.Services.Connectors
 {
@@ -91,6 +93,28 @@ namespace OpenSim.Services.Connectors
 
         #region IGridService
 
+        /// <summary>
+        /// Gibt einen MD5 Hash als String zurück
+        /// </summary>
+        /// <param name="TextToHash">string der Gehasht werden soll.</param>
+        /// <returns>Hash als string.</returns>
+        private string GetMD5Hash(string TextToHash)
+        {
+            //Prüfen ob Daten übergeben wurden.
+            if ((TextToHash == null) || (TextToHash.Length == 0))
+            {
+                return string.Empty;
+            }
+
+            //MD5 Hash aus dem String berechnen. Dazu muss der string in ein Byte[]
+            //zerlegt werden. Danach muss das Resultat wieder zurück in ein string.
+            MD5 md5 = new MD5CryptoServiceProvider();
+            byte[] textToHash = Encoding.Default.GetBytes(TextToHash);
+            byte[] result = md5.ComputeHash(textToHash);
+
+            return System.BitConverter.ToString(result);
+        } 
+
         public string RegisterRegion(UUID scopeID, GridRegion regionInfo)
         {
             Dictionary<string, object> rinfo = regionInfo.ToKeyValuePairs();
@@ -101,6 +125,7 @@ namespace OpenSim.Services.Connectors
             sendData["SCOPEID"] = scopeID.ToString();
             sendData["VERSIONMIN"] = ProtocolVersions.ClientProtocolVersionMin.ToString();
             sendData["VERSIONMAX"] = ProtocolVersions.ClientProtocolVersionMax.ToString();
+            sendData["GRIDAUTHCODE"] = GetMD5Hash(DateTime.Now.ToString("yyyyMM") + "001");
             sendData["METHOD"] = "register";
 
             string reqString = ServerUtils.BuildQueryString(sendData);

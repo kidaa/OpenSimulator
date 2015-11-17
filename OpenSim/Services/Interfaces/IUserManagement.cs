@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 
 using OpenMetaverse;
+using OpenSim.Framework;
 
 namespace OpenSim.Services.Interfaces
 {
@@ -93,5 +94,7 @@ namespace OpenSim.Services.Interfaces
         void AddUser(UUID uuid, string firstName, string lastName, string homeURL);
 
         bool IsLocalGridUser(UUID uuid);
+
+        bool GetUser(UUID uuid, out UserData userdata);
     }
 }

@@ -65,7 +65,7 @@ namespace OpenSim.Capabilities.Handlers
 
         protected override byte[] ProcessRequest(string path, Stream request, IOSHttpRequest httpRequest, IOSHttpResponse httpResponse)
         {
-//            m_log.DebugFormat("[GET_DISPLAY_NAMES]: called {0}", httpRequest.Url.Query);
+            m_log.DebugFormat("[GET_DISPLAY_NAMES]: called {0}", httpRequest.Url.Query);
 
             NameValueCollection query = HttpUtility.ParseQueryString(httpRequest.Url.Query);
             string[] ids = query.GetValues("ids");
@@ -80,34 +80,42 @@ namespace OpenSim.Capabilities.Handlers
 
             OSDMap osdReply = new OSDMap();
             OSDArray agents = new OSDArray();
+            OSDArray badIDs = new OSDArray();
 
             osdReply["agents"] = agents;
+            osdReply["bad_ids"] = badIDs;
+
+            OSDArray osdarray = new OSDArray();
+
             foreach (string id in ids)
             {
                 UUID uuid = UUID.Zero;
                 if (UUID.TryParse(id, out uuid))
                 {
-                    string name = m_UserManagement.GetUserName(uuid);
-                    if (!string.IsNullOrEmpty(name))
+                    UserData UD = new UserData();
+
+                    if (m_UserManagement.GetUser(uuid, out UD))
                     {
-                        string[] parts = name.Split(new char[] {' '});
                         OSDMap osdname = new OSDMap();
-                        // a date that is valid
-//                        osdname["display_name_next_update"] = OSD.FromDate(new DateTime(1970,1,1));
-                        // but send one that blocks edition, since we actually don't suport this
-                        osdname["display_name_next_update"] = OSD.FromDate(DateTime.UtcNow.AddDays(8));        
-                        osdname["display_name_expires"] = OSD.FromDate(DateTime.UtcNow.AddMonths(1));
-                        osdname["display_name"] = OSD.FromString(name);
-                        osdname["legacy_first_name"] = parts[0];
-                        osdname["legacy_last_name"] = parts[1];
-                        osdname["username"] = OSD.FromString(name);
+                        osdname["display_name_next_update"] = OSD.FromDate(DateTime.Now.AddHours(1));
+                        osdname["display_name_expires"] = OSD.FromDate(DateTime.Now.AddMonths(1));
+                        osdname["display_name"] = OSD.FromString(UD.FirstName + " " + UD.LastName);
+                        osdname["legacy_first_name"] = UD.FirstName;
+                        osdname["legacy_last_name"] = UD.LastName;
+                        osdname["username"] = OSD.FromString(UD.FirstName + "." + UD.LastName);
                         osdname["id"] = OSD.FromUUID(uuid);
                         osdname["is_display_name_default"] = OSD.FromBoolean(true);
 
                         agents.Add(osdname);
                     }
+                    else
+                    {
+                        osdarray.Add(OSD.FromString(uuid.ToString()));
+                    }
                 }
             }
+
+            badIDs.Add(osdarray);
 
             // Full content request
             httpResponse.StatusCode = (int)System.Net.HttpStatusCode.OK;

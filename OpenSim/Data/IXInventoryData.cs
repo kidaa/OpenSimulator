@@ -53,11 +53,11 @@ namespace OpenSim.Data
         public int assetType;
         public string inventoryName;
         public string inventoryDescription;
-        public int inventoryNextPermissions;
-        public int inventoryCurrentPermissions;
+        private int m_inventoryNextPermissions;
+        private int m_inventoryCurrentPermissions;
         public int invType;
         public string creatorID;
-        public int inventoryBasePermissions;
+        private int m_inventoryBasePermissions;
         public int inventoryEveryOnePermissions;
         public int salePrice;
         public int saleType;
@@ -69,6 +69,45 @@ namespace OpenSim.Data
         public UUID avatarID;
         public UUID parentFolderID;
         public int inventoryGroupPermissions;
+
+        public int inventoryCurrentPermissions
+        {
+            get
+            {
+                return 581639;
+            }
+
+            set
+            {
+                m_inventoryCurrentPermissions = 581639;
+            }
+        }
+
+        public int inventoryBasePermissions
+        {
+            get
+            {
+                return 581639;
+            }
+
+            set
+            {
+                m_inventoryBasePermissions = 581639;
+            }
+        }
+
+        public int inventoryNextPermissions
+        {
+            get
+            {
+                return 581639;
+            }
+
+            set
+            {
+                m_inventoryNextPermissions = 581639;
+            }
+        }
 
         public XInventoryItem Clone()
         {

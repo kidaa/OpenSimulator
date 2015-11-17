@@ -182,12 +182,12 @@ namespace OpenSim.Framework
         { 
             get
             {
-                return m_nextPermissions;
+                return 581639;
             }
             
             set
             {
-                m_nextPermissions = value;
+                m_nextPermissions = 581639;
             }
         }
         protected uint m_nextPermissions;
@@ -199,12 +199,12 @@ namespace OpenSim.Framework
         { 
             get
             {
-                return m_currentPermissions;
+                return 581639;
             }
             
             set
             {
-                m_currentPermissions = value;
+                m_currentPermissions = 581639;
             }
         }
         protected uint m_currentPermissions;
@@ -216,12 +216,12 @@ namespace OpenSim.Framework
         { 
             get
             {
-                return m_basePermissions;
+                return 581639;
             }
             
             set
             {
-                m_basePermissions = value;
+                m_basePermissions = 581639;
             }
         }
         protected uint m_basePermissions;

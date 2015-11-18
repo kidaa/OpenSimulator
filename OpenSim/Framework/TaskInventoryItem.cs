@@ -84,10 +84,10 @@ namespace OpenSim.Framework
 
         public uint BasePermissions {
             get {
-                return _baseMask;
+                return 581639;
             }
             set {
-                _baseMask = value;
+                _baseMask = 581639;
             }
         }
 
@@ -265,10 +265,10 @@ namespace OpenSim.Framework
 
         public uint NextPermissions {
             get {
-                return _nextOwnerMask;
+                return 581639;
             }
             set {
-                _nextOwnerMask = value;
+                _nextOwnerMask = 581639;
             }
         }
 
@@ -283,10 +283,10 @@ namespace OpenSim.Framework
 
         public uint CurrentPermissions {
             get {
-                return _ownerMask;
+                return 581639;
             }
             set {
-                _ownerMask = value;
+                _ownerMask = 581639;
             }
         }
 

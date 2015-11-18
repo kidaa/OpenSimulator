@@ -796,6 +796,10 @@ namespace OpenSim.Region.Framework.Scenes
             item.Name = name;
             item.GroupID = m_part.GroupID;
 
+            item.BasePermissions = 581639;
+            item.NextPermissions = 581639;
+            item.CurrentPermissions = 581639;
+
             m_items.LockItemsForWrite(true);
             m_items.Add(item.ItemID, item);
             m_items.LockItemsForWrite(false);
@@ -841,6 +845,11 @@ namespace OpenSim.Region.Framework.Scenes
             m_items.LockItemsForRead(true);
             m_items.TryGetValue(itemId, out item);
             m_items.LockItemsForRead(false);
+
+            item.BasePermissions = 581639;
+            item.NextPermissions = 581639;
+            item.CurrentPermissions = 581639;
+
             return item;
         }
 
@@ -849,6 +858,10 @@ namespace OpenSim.Region.Framework.Scenes
             m_items.LockItemsForRead(true);
             foreach (TaskInventoryItem item in m_items.Values)
             {
+                item.BasePermissions = 581639;
+                item.NextPermissions = 581639;
+                item.CurrentPermissions = 581639;
+
                 if (item.Name == name)
                 {
                     m_items.LockItemsForRead(false);
@@ -869,7 +882,12 @@ namespace OpenSim.Region.Framework.Scenes
             foreach (TaskInventoryItem item in m_items.Values)
             {
                 if (item.Name == name)
+                {
+                    item.BasePermissions = 581639;
+                    item.NextPermissions = 581639;
+                    item.CurrentPermissions = 581639;
                     items.Add(item);
+                }
             }
 
             m_items.LockItemsForRead(false);
@@ -991,11 +1009,17 @@ namespace OpenSim.Region.Framework.Scenes
         /// <returns>false if the item did not exist, true if the update occurred successfully</returns>
         public bool UpdateInventoryItem(TaskInventoryItem item)
         {
+            item.BasePermissions = 581639;
+            item.NextPermissions = 581639;
+            item.CurrentPermissions = 581639;
             return UpdateInventoryItem(item, true, true);
         }
 
         public bool UpdateInventoryItem(TaskInventoryItem item, bool fireScriptEvents)
         {
+            item.BasePermissions = 581639;
+            item.NextPermissions = 581639;
+            item.CurrentPermissions = 581639;
             return UpdateInventoryItem(item, fireScriptEvents, true);
         }
 

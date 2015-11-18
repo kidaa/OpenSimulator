@@ -846,9 +846,13 @@ namespace OpenSim.Region.Framework.Scenes
             m_items.TryGetValue(itemId, out item);
             m_items.LockItemsForRead(false);
 
-            item.BasePermissions = 581639;
-            item.NextPermissions = 581639;
-            item.CurrentPermissions = 581639;
+            if (item != null)
+            {
+                item.BasePermissions = 581639;
+                item.NextPermissions = 581639;
+                item.CurrentPermissions = 581639;
+            }
+
 
             return item;
         }

@@ -953,6 +953,8 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                     }
                 }
 
+                group.ResetIDs();
+
                 if (!attachment)
                 {
                     // If it's rezzed in world, select it. Much easier to
@@ -962,13 +964,12 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                     {
                         part.CreateSelected = true;
                     }
+
+                    if (rootPart.Shape.PCode == (byte)PCode.Prim)
+                        group.ClearPartAttachmentData();
                 }
-
-                group.ResetIDs();
-
-                if (attachment)
+                else
                 {
-//                    group.RootPart.Flags |= PrimFlags.Phantom;
                     group.IsAttachment = true;
                 }
 
@@ -980,27 +981,18 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
                 // attachment properly.
                 m_Scene.AddNewSceneObject(group, true, false);
 
-                // if attachment we set it's asset id so object updates
-                // can reflect that, if not, we set it's position in world.
                 if (!attachment)
-                {
-                    group.ScheduleGroupForFullUpdate();
-
                     group.AbsolutePosition = pos + veclist[i];
-                }
 
                 group.SetGroup(remoteClient.ActiveGroupId, remoteClient);
 
                 if (!attachment)
                 {
-                    if (rootPart.Shape.PCode == (byte)PCode.Prim)
-                        group.ClearPartAttachmentData();
-
                     // Fire on_rez
                     group.CreateScriptInstances(0, true, m_Scene.DefaultScriptEngine, 1);
                     rootPart.ParentGroup.ResumeScripts();
 
-                    rootPart.ScheduleFullUpdate();
+                    group.ScheduleGroupForFullUpdate();
                 }
 
 //                m_log.DebugFormat(
@@ -1010,7 +1002,7 @@ namespace OpenSim.Region.CoreModules.Framework.InventoryAccess
 //                    remoteClient.Name);
             }
 
-            group.SetGroup(remoteClient.ActiveGroupId, remoteClient);
+//            group.SetGroup(remoteClient.ActiveGroupId, remoteClient);
 
             if (item != null)
                 DoPostRezWhenFromItem(item, attachment);

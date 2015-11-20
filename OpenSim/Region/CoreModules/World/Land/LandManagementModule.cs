@@ -2047,6 +2047,12 @@ namespace OpenSim.Region.CoreModules.World.Land
             if (m_scene.Permissions.IsAdministrator(target))
                 return;
 
+            // Cannot eject NPCs
+            INPCModule npcm = client.Scene.RequestModuleInterface<INPCModule>();
+
+            if (npcm.IsNPC(target, (Scene)client.Scene))
+                return;
+
             // Check if you even have permission to do this
             ILandObject land = m_scene.LandChannel.GetLandObject(targetAvatar.AbsolutePosition.X, targetAvatar.AbsolutePosition.Y);
             if (!m_scene.Permissions.CanEditParcelProperties(client.AgentId, land, GroupPowers.LandEjectAndFreeze, true) &&

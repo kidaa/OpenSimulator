@@ -311,6 +311,7 @@ namespace OpenSim.Region.CoreModules.Scripting.WorldComm
             // Determine which listen event filters match the given set of arguments, this results
             // in a limited set of listeners, each belonging a host. If the host is in range, add them
             // to the pending queue.
+
             foreach (ListenerInfo li
                     in m_listenerManager.GetListeners(UUID.Zero, channel,
                     name, id, msg))
@@ -368,10 +369,10 @@ namespace OpenSim.Region.CoreModules.Scripting.WorldComm
         /// <param name='msg'>
         /// Message.
         /// </param>
-        public bool DeliverMessageTo(UUID target, int channel, Vector3 pos, string name, UUID id, string msg)
+        public void DeliverMessageTo(UUID target, int channel, Vector3 pos, string name, UUID id, string msg)
         {
             if (channel == DEBUG_CHANNEL)
-                return true;
+                return;
 
             // Is id an avatar?
             ScenePresence sp = m_scene.GetScenePresence(target);
@@ -383,13 +384,17 @@ namespace OpenSim.Region.CoreModules.Scripting.WorldComm
                 {
                    // Channel 0 goes to viewer ONLY
                     m_scene.SimChat(Utils.StringToBytes(msg), ChatTypeEnum.Broadcast, 0, pos, name, id, target, false, false);
-                    return true;
+                    return;
                 }
+
+                // for now messages to prims don't cross regions
+                if(sp.IsChildAgent)
+                    return;
 
                 List<SceneObjectGroup> attachments = sp.GetAttachments();
 
                 if (attachments.Count == 0)
-                    return true;
+                    return;
 
                 // Get uuid of attachments
                 List<UUID> targets = new List<UUID>();
@@ -412,12 +417,12 @@ namespace OpenSim.Region.CoreModules.Scripting.WorldComm
                         QueueMessage(new ListenerInfo(li, name, id, msg));
                 }
 
-                return true;
+                return;
             }
 
             SceneObjectPart part = m_scene.GetSceneObjectPart(target);
             if (part == null) // Not even an object
-                return true; // No error
+                return; // No error
 
             foreach (ListenerInfo li in m_listenerManager.GetListeners(UUID.Zero, channel, name, id, msg))
             {
@@ -436,8 +441,6 @@ namespace OpenSim.Region.CoreModules.Scripting.WorldComm
                     break;
                 }
             }
-
-            return true;
         }
 
         protected void QueueMessage(ListenerInfo li)

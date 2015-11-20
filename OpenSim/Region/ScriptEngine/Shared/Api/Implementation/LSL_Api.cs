@@ -1264,13 +1264,8 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
 
             m_host.AddScriptLPS(1);
 
-            // debug channel is also sent to avatars
-            if (channelID == ScriptBaseClass.DEBUG_CHANNEL)
-            {
-                World.SimChat(Utils.StringToBytes(text),
-                    ChatTypeEnum.Shout, channelID, m_host.ParentGroup.RootPart.AbsolutePosition, m_host.Name, m_host.UUID, true);
-            
-            }
+            World.SimChat(Utils.StringToBytes(text),
+                          ChatTypeEnum.Region, channelID, m_host.ParentGroup.RootPart.AbsolutePosition, m_host.Name, m_host.UUID, false);
 
             IWorldComm wComm = m_ScriptEngine.World.RequestModuleInterface<IWorldComm>();
             if (wComm != null)
@@ -1285,10 +1280,15 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             m_host.AddScriptLPS(1);
 
             if (channel == ScriptBaseClass.DEBUG_CHANNEL)
+            {
                 return;
+            }
 
             UUID TargetID;
             UUID.TryParse(target, out TargetID);
+
+            World.SimChatToAgent(TargetID, Utils.StringToBytes(msg),
+                          channel, m_host.ParentGroup.RootPart.AbsolutePosition, m_host.Name, m_host.UUID, true);
 
             IWorldComm wComm = m_ScriptEngine.World.RequestModuleInterface<IWorldComm>();
             if (wComm != null)
@@ -7740,14 +7740,11 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
         {
             m_host.AddScriptLPS(1);
             if(linknum == ScriptBaseClass.LINK_SET ||
-                    linknum == ScriptBaseClass.LINK_ALL_CHILDREN ||
-                    linknum == ScriptBaseClass.LINK_ALL_OTHERS ||
-                    linknum == 0)
-                return UUID.Zero.ToString();
+                linknum == ScriptBaseClass.LINK_ALL_CHILDREN ||
+                linknum == ScriptBaseClass.LINK_ALL_OTHERS) return UUID.Zero.ToString();
 
             List<SceneObjectPart> parts = GetLinkParts(linknum);
-            if (parts.Count == 0)
-                return UUID.Zero.ToString();
+            if (parts.Count == 0) return UUID.Zero.ToString();
             return parts[0].SitTargetAvatar.ToString();
         }
 

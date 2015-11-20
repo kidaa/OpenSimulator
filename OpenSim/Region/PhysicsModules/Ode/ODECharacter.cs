@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using OpenMetaverse;
+using Ode.NET;
 using OpenSim.Framework;
 using OpenSim.Region.PhysicsModules.SharedBase;
 using log4net;
@@ -1104,8 +1105,8 @@ namespace OpenSim.Region.PhysicsModule.ODE
 //          lock (OdeScene.UniversalColliderSyncObject)
             Shell = d.CreateCapsule(_parent_scene.space, CAPSULE_RADIUS, CAPSULE_LENGTH);
 
-            d.GeomSetCategoryBits(Shell, (uint)m_collisionCategories);
-            d.GeomSetCollideBits(Shell, (uint)m_collisionFlags);
+            d.GeomSetCategoryBits(Shell, (int)m_collisionCategories);
+            d.GeomSetCollideBits(Shell, (int)m_collisionFlags);
 
             d.MassSetCapsuleTotal(out ShellMass, m_mass, 2, CAPSULE_RADIUS, CAPSULE_LENGTH);
             Body = d.BodyCreate(_parent_scene.world);

@@ -112,3 +112,4 @@ doc/html
 doc/doxygen.error.log
 
 *.patch
+!Mono.Security.dll

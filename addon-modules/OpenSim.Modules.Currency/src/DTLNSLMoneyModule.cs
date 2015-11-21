@@ -190,7 +190,7 @@ namespace OpenSim.Modules.Currency
 		private string m_settle_message  = "";
 		private bool   m_settle_user  	 = false;
 
-		private NSLCertificateVerify m_certVerify = new NSLCertificateVerify();	// サーバ認証用
+		private NSLCertificateVerify m_certVerify;	// サーバ認証用
 
 
 		/// <summary>   
@@ -289,8 +289,6 @@ namespace OpenSim.Modules.Currency
 				else {
 					m_checkServerCert = false;
 				}
-				ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(m_certVerify.ValidateServerCertificate);
-
 
 				// Settlement
 				m_use_web_settle = economyConfig.GetBoolean("SettlementByWeb", false);
@@ -315,9 +313,10 @@ namespace OpenSim.Modules.Currency
 				EnergyEfficiency 		= economyConfig.GetFloat("EnergyEfficiency", 		1);
 
 			}
-			catch
+			catch(Exception e)
 			{
-				m_log.ErrorFormat("[MONEY]: Initialise: Faile to read configuration file");
+                m_log.ErrorFormat("[MONEY]: Initialise: Faile to read configuration file");
+                m_log.ErrorFormat("[MONEY]: " + e.Message);
 			}
 		}
 

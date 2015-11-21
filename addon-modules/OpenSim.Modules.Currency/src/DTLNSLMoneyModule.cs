@@ -430,6 +430,12 @@ namespace OpenSim.Modules.Currency
 		#region IMoneyModule interface.
 
 		// for LSL llGiveMoney() function
+        public bool ObjectGiveMoney(UUID objectID, UUID fromID, UUID toID, int amount, UUID txn, out string reason)
+        {
+            reason = "";
+            return ObjectGiveMoney(objectID, fromID, toID, amount);
+        }
+
 		public bool ObjectGiveMoney(UUID objectID, UUID fromID, UUID toID, int amount)
 		{
 			//m_log.InfoFormat("[MONEY]: ObjectGiveMoney: LSL ObjectGiveMoney. UUID = {0}", objectID.ToString());
@@ -515,6 +521,11 @@ namespace OpenSim.Modules.Currency
 			ulong region = GetLocateScene(agentID).RegionInfo.RegionHandle;
 			PayMoneyCharge(agentID, amount, (int)MoneyTransactionType.UploadCharge, region, text);
 		}
+
+        public void MoveMoney(UUID fromUser, UUID toUser, int amount, string text)
+        {
+            return;
+        }
 
 
 		//////////////////////////////////////////////////////////////////////

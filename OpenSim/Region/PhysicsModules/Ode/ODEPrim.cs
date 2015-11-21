@@ -204,7 +204,6 @@ namespace OpenSim.Region.PhysicsModule.ODE
         public int m_interpenetrationcount { get; private set; }
         internal float m_collisionscore;
         public int m_roundsUnderMotionThreshold { get; private set; }
-        private int m_crossingfailures;
 
         public bool outofBounds { get; private set; }
         private float m_density = 10.000006836f; // Aluminum g/cm3;
@@ -2666,6 +2665,9 @@ Console.WriteLine(" JointCreateFixed");
                             m_log.Warn("[PHYSICS]: Too many crossing failures for: " + Name);
                         }
             */
+
+            d.AllocateODEDataForThread(0U);
+
             _position.X = Util.Clip(_position.X, 0.5f, _parent_scene.WorldExtents.X - 0.5f);
             _position.Y = Util.Clip(_position.Y, 0.5f, _parent_scene.WorldExtents.Y - 0.5f);
             _position.Z = Util.Clip(_position.Z + 0.2f, -100f, 50000f);
@@ -2682,6 +2684,11 @@ Console.WriteLine(" JointCreateFixed");
                 d.BodySetLinearVel(Body, 0, 0, 0); // stop it
                 d.BodySetPosition(Body, _position.X, _position.Y, _position.Z);
             }
+
+            if(m_vehicle != null && m_vehicle.Type != Vehicle.TYPE_NONE)
+                m_vehicle.Stop(); // this also updates vehicle last position from the body position
+            
+            enableBodySoft();
 
             outofBounds = false;
             base.RequestPhysicsterseUpdate();
@@ -3119,7 +3126,7 @@ Console.WriteLine(" JointCreateFixed");
             m_eventsubscription = 0;
         }
 
-        public void AddCollisionEvent(uint CollidedWith, ContactPoint contact)
+        public override void AddCollisionEvent(uint CollidedWith, ContactPoint contact)
         {
             CollisionEventsThisFrame.AddCollider(CollidedWith, contact);
         }

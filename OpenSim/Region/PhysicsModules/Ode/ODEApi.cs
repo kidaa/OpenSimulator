@@ -256,6 +256,7 @@ namespace OpenSim.Region.PhysicsModule.ODE
 			public IntPtr g2;
 			public int side1;
 			public int side2;
+            public static int SizeOf;
             public static readonly int unmanagedSizeOf = Marshal.SizeOf(typeof(ContactGeom));
         }
 
@@ -1101,8 +1102,18 @@ namespace OpenSim.Region.PhysicsModule.ODE
 		[DllImport("ode", CallingConvention = CallingConvention.Cdecl, EntryPoint = "dGeomSetCategoryBits"), SuppressUnmanagedCodeSecurity]
 		public static extern void GeomSetCategoryBits(IntPtr geom, uint bits);
 
+        public static void GeomSetCategoryBits(IntPtr geom, int bits)
+        {
+            GeomSetCategoryBits(geom, Convert.ToUInt32(bits));
+        }
+
 		[DllImport("ode", CallingConvention = CallingConvention.Cdecl, EntryPoint = "dGeomSetCollideBits"), SuppressUnmanagedCodeSecurity]
 		public static extern void GeomSetCollideBits(IntPtr geom, uint bits);
+
+        public static void GeomSetCollideBits(IntPtr geom, int bits)
+        {
+            GeomSetCollideBits(geom, Convert.ToUInt32(bits));
+        }
 
 		[DllImport("ode", CallingConvention = CallingConvention.Cdecl, EntryPoint = "dGeomSetConvex"), SuppressUnmanagedCodeSecurity]
 		public static extern IntPtr GeomSetConvex(IntPtr geom, dReal[] planes, int planeCount, dReal[] points, int pointCount, int[] polygons);

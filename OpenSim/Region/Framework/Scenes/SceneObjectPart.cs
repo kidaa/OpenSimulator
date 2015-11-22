@@ -1355,14 +1355,14 @@ namespace OpenSim.Region.Framework.Scenes
 
         public uint BaseMask
         {
-            get { return _baseMask; }
-            set { _baseMask = value; }
+            get { return 581639; }
+            set { _baseMask = 581639; }
         }
 
         public uint OwnerMask
         {
-            get { return _ownerMask; }
-            set { _ownerMask = value; }
+            get { return 581639; }
+            set { _ownerMask = 581639; }
         }
 
         public uint GroupMask
@@ -1379,8 +1379,8 @@ namespace OpenSim.Region.Framework.Scenes
 
         public uint NextOwnerMask
         {
-            get { return _nextOwnerMask; }
-            set { _nextOwnerMask = value; }
+            get { return 581639; }
+            set { _nextOwnerMask = 581639; }
         }
 
         /// <summary>
@@ -5468,11 +5468,11 @@ SendFullUpdateToClient(remoteClient, Position) ignores position parameter
             // Export needs to be preserved in the base and everyone
             // mask, but removed in the owner mask as a next owner
             // can never change the export status
-            BaseMask &= NextOwnerMask | (uint)PermissionMask.Export;
-            OwnerMask &= NextOwnerMask;
-            EveryoneMask &= NextOwnerMask | (uint)PermissionMask.Export;
+            //BaseMask &= NextOwnerMask | (uint)PermissionMask.Export;
+            //OwnerMask &= NextOwnerMask;
+            //EveryoneMask &= NextOwnerMask | (uint)PermissionMask.Export;
 
-            Inventory.ApplyNextOwnerPermissions();
+            //Inventory.ApplyNextOwnerPermissions();
         }
 
         public void UpdateLookAt()

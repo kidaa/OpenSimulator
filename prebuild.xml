@@ -1227,7 +1227,8 @@
       <Reference name="OpenMetaverseTypes" path="../../bin/"/>
       <Reference name="OpenMetaverse" path="../../bin/"/>
       <Reference name="OpenMetaverse.StructuredData" path="../../bin/"/>
-      <Reference name="OpenSim.Framework"/>
+      <Reference name="MoneyServer"/>
+	  <Reference name="OpenSim.Framework"/>
       <Reference name="OpenSim.Framework.Console"/>
       <Reference name="OpenSim.Framework.Servers"/>
       <Reference name="OpenSim.Framework.Servers.HttpServer"/>
@@ -1238,6 +1239,8 @@
       <Reference name="Mono.Addins" path="../../bin/"/>
       <Reference name="Mono.Addins.Setup" path="../../bin/"/>
 
+	<ProjectReference Include="..\..\addon-modules\OpenSim.Grid.MoneyServer\src\MoneyServer.csproj"/>
+	  
       <Files>
         <Match pattern="*.cs" recurse="false">
           <Exclude pattern="Tests"/>

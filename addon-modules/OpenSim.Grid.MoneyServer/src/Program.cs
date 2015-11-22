@@ -27,7 +27,7 @@
 
 namespace OpenSim.Grid.MoneyServer
 {
-    class Program
+    public class Program
     {
         public static void Main(string[] args)
         {

@@ -55,8 +55,8 @@ namespace OpenSim.Server
 
         public static int Main(string[] args)
         {
-            Thread workerThread = new Thread(startMoneyServer);
-            workerThread.Start();
+            Thread moneyServerThread = new Thread(startMoneyServer);
+            moneyServerThread.Start();
 
             // Make sure we don't get outbound connections queueing
             ServicePointManager.DefaultConnectionLimit = 50;

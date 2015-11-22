@@ -179,6 +179,7 @@ namespace OpenSim.Grid.MoneyServer
 				// [Startup]
 				IConfig st_config = moneyConfig.m_config.Configs["Startup"];
 				string PIDFile = st_config.GetString("PIDFile", "");
+                m_moneyServerPort = uint.Parse(st_config.GetString("Port", "8008"));
 				if (PIDFile!="") Create_PIDFile(PIDFile);
 
 				// [MySql]

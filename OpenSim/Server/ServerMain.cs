@@ -169,7 +169,10 @@ namespace OpenSim.Server
 
         private static void startMoneyServer()
         {
-            Process.Start("MoneyServer.exe");
+            Process pro = new Process();
+            pro.StartInfo.FileName = "MoneyServer.exe";
+            pro.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            pro.Start();
         }
     }
 }

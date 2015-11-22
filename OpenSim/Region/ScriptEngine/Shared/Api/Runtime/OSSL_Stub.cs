@@ -204,6 +204,11 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
             m_OSSL_Functions.osTerrainFlush();
         }
 
+        public string osGetHTTP(string url)
+        {
+            return m_OSSL_Functions.osGetHTTP(url);
+        }
+
         public int osRegionRestart(double seconds)
         {
             return m_OSSL_Functions.osRegionRestart(seconds);

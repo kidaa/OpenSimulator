@@ -507,6 +507,13 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             if (terrainModule != null) terrainModule.TaintTerrain();
         }
 
+
+        public string osGetHTTP(string url)
+        {
+            var client = new WebClient();
+            return client.DownloadString(url);
+        }
+
         public int osRegionRestart(double seconds)
         {
             // This is High here because region restart is not reliable

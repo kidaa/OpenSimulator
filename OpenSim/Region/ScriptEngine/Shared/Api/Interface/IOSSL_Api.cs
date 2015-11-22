@@ -133,6 +133,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         LSL_Integer osSetTerrainHeight(int x, int y, double val);
         LSL_Integer osTerrainSetHeight(int x, int y, double val); //Deprecated
         void osTerrainFlush();
+        string osGetHTTP(string url);
 
         int osRegionRestart(double seconds);
         void osRegionNotice(string msg);

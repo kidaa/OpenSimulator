@@ -113,3 +113,4 @@ doc/doxygen.error.log
 
 *.patch
 !Mono.Security.dll
+!MoneyServer.ini

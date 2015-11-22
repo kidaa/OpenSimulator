@@ -30,7 +30,6 @@ using System.Collections.Generic;
 //using System.Linq;
 using System.Text;
 using OpenSim.Data.MySQL.MySQLMoneyDataWrapper;
-using log4net;
 using System.Reflection;
 using OpenMetaverse;
 
@@ -39,7 +38,6 @@ namespace OpenSim.Grid.MoneyServer
 {
     class MoneyDBService: IMoneyDBService
     {
-        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private string m_connect;
         private MySQLMoneyManager m_moneyManager;
 
@@ -78,7 +76,7 @@ namespace OpenSim.Grid.MoneyServer
             }
             else 
             {
-                m_log.Error("[MONEY DB]: Connection string is null,initialise database failed");
+                Console.WriteLine("[MONEY DB]: Connection string is null,initialise database failed");
                 throw new Exception("Failed to initialise MySql database");
             }
         }
@@ -107,7 +105,7 @@ namespace OpenSim.Grid.MoneyServer
                 {
                     lockedCons = 0;
                     System.Threading.Thread.Sleep(1000); // Wait some time before searching them again.
-                    m_log.Debug(
+                    Console.WriteLine(
                         "WARNING: All threads are in use. Probable cause: Something didnt release a mutex properly, or high volume of requests inbound.");
                 }
             }
@@ -124,7 +122,7 @@ namespace OpenSim.Grid.MoneyServer
             catch(Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return 0;
             }
             finally
@@ -144,7 +142,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -164,7 +162,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -184,7 +182,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -204,7 +202,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -224,7 +222,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -244,7 +242,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -264,7 +262,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -284,7 +282,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return null;
             }
             finally
@@ -325,7 +323,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return null;
             }
             finally
@@ -356,11 +354,11 @@ namespace OpenSim.Grid.MoneyServer
                             return true;
                         else // give money to receiver failed.
                         {
-                            m_log.ErrorFormat("[MONEY DB]: Give money to receiver {0} failed", transaction.Receiver);
+                            Console.WriteLine("[MONEY DB]: Give money to receiver {0} failed", transaction.Receiver);
                             //Return money to sender
                             if (giveMoney(transactionUUID, transaction.Sender, transaction.Amount))
                             {
-                                m_log.ErrorFormat("[MONEY DB]: give money to receiver {0} failed but return it to sender {1} successfully",
+                                Console.WriteLine("[MONEY DB]: give money to receiver {0} failed but return it to sender {1} successfully",
                                     transaction.Receiver,
                                     transaction.Sender);
                                 updateTransactionStatus(transactionUUID,
@@ -369,24 +367,24 @@ namespace OpenSim.Grid.MoneyServer
                             }
                             else
                             {
-                                m_log.ErrorFormat("[MONEY DB]: FATAL ERROR: Money withdrawn from sender: {0}, but failed to be given to receiver {1}",
+                                Console.WriteLine("[MONEY DB]: FATAL ERROR: Money withdrawn from sender: {0}, but failed to be given to receiver {1}",
                                     transaction.Sender, transaction.Receiver);
                             }
                         }
                     }
                     else // withdraw money failed
                     {
-                        m_log.ErrorFormat("[MONEY DB]: Withdraw money from sender {0} failed", transaction.Sender);
+                        Console.WriteLine("[MONEY DB]: Withdraw money from sender {0} failed", transaction.Sender);
                     }
                 }
                 else // not enough balance to finish the transaction
                 {
-                    m_log.ErrorFormat("[MONEY DB]: Not enough balance for user: {0} to apply the transaction.", transaction.Sender);
+                    Console.WriteLine("[MONEY DB]: Not enough balance for user: {0} to apply the transaction.", transaction.Sender);
                 }
             }
             else // Can not fetch the transaction or it has expired
             {
-                m_log.ErrorFormat("[MONEY DB]: The transaction:{0} has expired", transactionUUID.ToString());
+                Console.WriteLine("[MONEY DB]: The transaction:{0} has expired", transactionUUID.ToString());
             }
             return false;
         }
@@ -409,13 +407,13 @@ namespace OpenSim.Grid.MoneyServer
                 if (giveMoney(transactionUUID, transaction.Receiver, transaction.Amount)) return true;
                 else // give money to receiver failed.
                 {
-                    m_log.ErrorFormat("[MONEY DB]: Add money to receiver {0} failed", transaction.Receiver);
+                    Console.WriteLine("[MONEY DB]: Add money to receiver {0} failed", transaction.Receiver);
                     updateTransactionStatus(transactionUUID, (int)Status.FAILED_STATUS, "add money to receiver failed");
 				}
             }
             else // Can not fetch the transaction or it has expired
             {
-                m_log.ErrorFormat("[MONEY DB]: The transaction:{0} has expired", transactionUUID.ToString());
+                Console.WriteLine("[MONEY DB]: The transaction:{0} has expired", transactionUUID.ToString());
             }
             return false;
         }
@@ -428,13 +426,13 @@ namespace OpenSim.Grid.MoneyServer
             {
                 if (dbm.Manager.fetchUserInfo(user.UserID) != null)
                 {
-                    m_log.InfoFormat("[MONEY DB]: Found user \"{0}\", now update information", user.Avatar);
+                    Console.WriteLine("[MONEY DB]: Found user \"{0}\", now update information", user.Avatar);
                     if (m_moneyManager.updateUserInfo(user))
                         return true;
                 }
                 else if (dbm.Manager.addUserInfo(user))
                 {
-                    m_log.InfoFormat("[MONEY DB]: Unable to find user \"{0}\", add it to DB successfully", user.Avatar);
+                    Console.WriteLine("[MONEY DB]: Unable to find user \"{0}\", add it to DB successfully", user.Avatar);
                     return true;
                 }
                 return false;
@@ -444,7 +442,7 @@ namespace OpenSim.Grid.MoneyServer
                 dbm.Manager.Reconnect();
                 // Fumi.Iseki
                 m_moneyManager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return false;
             }
             finally
@@ -464,7 +462,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return null;
             }
             finally
@@ -484,7 +482,7 @@ namespace OpenSim.Grid.MoneyServer
             catch (Exception e)
             {
                 dbm.Manager.Reconnect();
-                m_log.Error(e.ToString());
+                Console.WriteLine(e.ToString());
                 return -1;
             }
             finally

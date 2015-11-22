@@ -39,8 +39,6 @@ using System.Timers;
 
 using HttpServer;
 using Nini.Config;
-using log4net;
-
 using OpenSim.Framework;
 using OpenSim.Framework.Console;
 using OpenSim.Framework.Servers;
@@ -55,8 +53,6 @@ namespace OpenSim.Grid.MoneyServer
 {
 	class MoneyServerBase : BaseOpenSimServer, IMoneyServiceCore
 	{
-		private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
 		private string connectionString = string.Empty;
 		private uint m_moneyServerPort = 8008;
 		private string m_hostName = "localhost";
@@ -73,7 +69,7 @@ namespace OpenSim.Grid.MoneyServer
 		private MoneyXmlRpcModule m_moneyXmlRpcModule;
 		private MoneyDBService m_moneyDBService;
 
-		private NSLCertificateVerify m_certVerify = new NSLCertificateVerify();	// クライアント認証用
+		private NSLCertificateVerify m_certVerify;	// クライアント認証用
 
 		private Dictionary<string, string> m_sessionDic = new Dictionary<string, string>();
 		private Dictionary<string, string> m_secureSessionDic = new Dictionary<string, string>();
@@ -122,7 +118,7 @@ namespace OpenSim.Grid.MoneyServer
 
 		protected override void StartupSpecific()
 		{
-			m_log.Info("[MONEY SERVER]: Setup HTTP Server process");
+			Console.WriteLine("[MONEY SERVER]: Setup HTTP Server process");
 
 			ReadIniConfig();
 
@@ -139,10 +135,10 @@ namespace OpenSim.Grid.MoneyServer
 						if (finfo!=null) {
 							//HttpContextFactory.ClientCertificateValidationCallback = m_certVerify.ValidateClientCertificate;
 							finfo.SetValue(new HttpContextFactory(null, 0, null), (RemoteCertificateValidationCallback)m_certVerify.ValidateClientCertificate);
-							m_log.Info("[MONEY SERVER]: Set RemoteCertificateValidationCallback");
+                            Console.WriteLine("[MONEY SERVER]: Set RemoteCertificateValidationCallback");
 						}
 						else {
-							m_log.Error("[MONEY SERVER]: StartupSpecific: CheckClientCert is true. But this MoneyServer does not support CheckClientCert!!");
+                            Console.WriteLine("[MONEY SERVER]: StartupSpecific: CheckClientCert is true. But this MoneyServer does not support CheckClientCert!!");
 
 						}
 					}
@@ -159,9 +155,9 @@ namespace OpenSim.Grid.MoneyServer
 
 			catch (Exception e)
 			{
-				m_log.ErrorFormat("[MONEY SERVER]: StartupSpecific: Fail to start HTTPS process");
-				m_log.ErrorFormat("[MONEY SERVER]: StartupSpecific: Please Check Certificate File or Password. Exit");
-				m_log.ErrorFormat("[MONEY SERVER]: StartupSpecific: {0}", e);
+                Console.WriteLine("[MONEY SERVER]: StartupSpecific: Fail to start HTTPS process");
+                Console.WriteLine("[MONEY SERVER]: StartupSpecific: Please Check Certificate File or Password. Exit");
+                Console.WriteLine("[MONEY SERVER]: StartupSpecific: {0}", e);
 				Environment.Exit(1);
 			}
 
@@ -204,7 +200,7 @@ namespace OpenSim.Grid.MoneyServer
 				m_certFilename = m_config.GetString("ServerCertFilename", "");
 				m_certPassword = m_config.GetString("ServerCertPassword", "");
 				if (m_certFilename!="") {
-					m_log.Info("[MONEY SERVER]: ReadIniConfig: Execute HTTPS comunication. Cert file is " + m_certFilename);
+                    Console.WriteLine("[MONEY SERVER]: ReadIniConfig: Execute HTTPS comunication. Cert file is " + m_certFilename);
 				}
 
 				// クライアント認証
@@ -216,7 +212,7 @@ namespace OpenSim.Grid.MoneyServer
 				//
 				if (m_checkClientCert && m_cacertFilename!="") {
 					m_certVerify.SetPrivateCA(m_cacertFilename);
-					m_log.Info("[MONEY SERVER]: ReadIniConfig: Execute Authentication of Clients. CA  file is " + m_cacertFilename);
+                    Console.WriteLine("[MONEY SERVER]: ReadIniConfig: Execute Authentication of Clients. CA  file is " + m_cacertFilename);
 				}
 				else {
 					m_checkClientCert = false;
@@ -225,14 +221,14 @@ namespace OpenSim.Grid.MoneyServer
 				if (m_checkClientCert) {
 					if (m_clcrlFilename!="") {
 						m_certVerify.SetPrivateCRL(m_clcrlFilename);
-						m_log.Info("[MONEY SERVER]: ReadIniConfig: Execute Authentication of Clients. CRL file is " + m_clcrlFilename);
+                        Console.WriteLine("[MONEY SERVER]: ReadIniConfig: Execute Authentication of Clients. CRL file is " + m_clcrlFilename);
 					}
 				}
 			}
 
 			catch (Exception)
 			{
-				m_log.Error("[MONEY SERVER]: ReadIniConfig: Fail to setup configure. Please check MoneyServer.ini. Exit");
+                Console.WriteLine("[MONEY SERVER]: ReadIniConfig: Fail to setup configure. Please check MoneyServer.ini. Exit");
 				Environment.Exit(1);
 			}
 		}
@@ -259,7 +255,7 @@ namespace OpenSim.Grid.MoneyServer
 
 		protected virtual void SetupMoneyServices()
 		{
-			m_log.Info("[MONEY SERVER]: Connecting to Money Storage Server");
+            Console.WriteLine("[MONEY SERVER]: Connecting to Money Storage Server");
 
 			m_moneyDBService = new MoneyDBService();
 			m_moneyDBService.Initialise(connectionString, MAX_DB_CONNECTION);

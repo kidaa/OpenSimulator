@@ -37,6 +37,7 @@ using OpenSim.Server.Base;
 using OpenSim.Server.Handlers.Base;
 using Mono.Addins;
 using System.Threading;
+using System.Diagnostics;
 
 namespace OpenSim.Server
 {
@@ -55,8 +56,7 @@ namespace OpenSim.Server
 
         public static int Main(string[] args)
         {
-            Thread moneyServerThread = new Thread(startMoneyServer);
-            moneyServerThread.Start();
+            startMoneyServer();
 
             // Make sure we don't get outbound connections queueing
             ServicePointManager.DefaultConnectionLimit = 50;
@@ -169,8 +169,7 @@ namespace OpenSim.Server
 
         private static void startMoneyServer()
         {
-            string[] args = {};
-            OpenSim.Grid.MoneyServer.Program.Main(args);
+            Process.Start("MoneyServer.exe");
         }
     }
 }

@@ -3079,7 +3079,7 @@ namespace OpenSim.Region.Framework.Scenes
                     ControllingClient.SendAlertMessage(" There is no suitable surface to sit on, try another spot.");
                 else
                 { // non physical phantom  TODO
-                    ControllingClient.SendAlertMessage(" There is no suitable surface to sit on, try another spot.");
+//                    ControllingClient.SendAlertMessage(" There is no suitable surface to sit on, try another spot.");
                     return false;
                 }
                 return true;
@@ -4143,8 +4143,8 @@ namespace OpenSim.Region.Framework.Scenes
                             {
                                 byebyeRegions.Add(handle);
                                 // this should not be here
-                                if(eventQueue != null)
-                                    eventQueue.DisableSimulator(handle,UUID);
+//                                if(eventQueue != null)
+///                                    eventQueue.DisableSimulator(handle,UUID);
                             }
                         }
                         else
@@ -4154,8 +4154,8 @@ namespace OpenSim.Region.Framework.Scenes
                             {
                                 byebyeRegions.Add(handle);
                                 // this should not be here
-                                if(eventQueue != null)
-                                    eventQueue.DisableSimulator(handle,UUID);
+//                                if(eventQueue != null)
+//                                    eventQueue.DisableSimulator(handle,UUID);
                             }
                         }
                     }

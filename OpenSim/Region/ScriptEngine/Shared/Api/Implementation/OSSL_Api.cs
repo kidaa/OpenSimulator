@@ -1083,7 +1083,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             {
                 //POST
                 var request = (HttpWebRequest)WebRequest.Create(URL);
-                var data = Encoding.ASCII.GetBytes(postData);
+                var data = Encoding.Default.GetBytes(postData);
                 request.Method = "POST";
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.ContentLength = data.Length;

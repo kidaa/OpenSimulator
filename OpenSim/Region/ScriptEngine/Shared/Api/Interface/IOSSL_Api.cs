@@ -216,6 +216,9 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
 
         #endregion
 
+        //Get direct HTTP contend
+        string osGetHTTP(string URL, string postData);
+
         //texture draw functions
         string osMovePen(string drawList, int x, int y);
         string osDrawLine(string drawList, int startX, int startY, int endX, int endY);

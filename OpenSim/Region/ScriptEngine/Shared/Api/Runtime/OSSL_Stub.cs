@@ -330,6 +330,11 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
 
         // Texture Draw functions
 
+        public string osGetHTTP(string URL, string postData)
+        {
+            return m_OSSL_Functions.osGetHTTP(URL, postData);
+        }
+
         public string osMovePen(string drawList, int x, int y)
         {
             return m_OSSL_Functions.osMovePen(drawList, x, y);

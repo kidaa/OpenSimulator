@@ -1068,6 +1068,32 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             }
         }
 
+
+        //Get direct HTTP contend
+        public string osGetHTTP(string URL, string postData)
+        {
+            if (postData != "")
+            {
+                //GET
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                return new StreamReader(response.GetResponseStream()).ReadToEnd();
+            }
+            else
+            {
+                //POST
+                var request = (HttpWebRequest)WebRequest.Create(URL);
+                var data = Encoding.ASCII.GetBytes(postData);
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentLength = data.Length;
+                Stream stream = request.GetRequestStream();
+                stream.Write(data, 0, data.Length);
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                return new StreamReader(response.GetResponseStream()).ReadToEnd();
+            }
+        }
+
         //Texture draw functions
         public string osMovePen(string drawList, int x, int y)
         {

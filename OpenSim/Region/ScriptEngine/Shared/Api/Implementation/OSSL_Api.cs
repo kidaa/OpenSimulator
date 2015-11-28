@@ -1072,7 +1072,7 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
         //Get direct HTTP contend
         public string osGetHTTP(string URL, string postData)
         {
-            if (postData != "")
+            if (postData == "")
             {
                 //GET
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);

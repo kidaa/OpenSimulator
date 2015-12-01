@@ -1075,6 +1075,15 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             if (postData == "")
             {
                 //GET
+                try
+                {
+
+                }
+                catch (Exception eee)
+                {
+                    m_log.Error("ERROR AT GET REQUEST TO " + URL + "\n" + eee.Message);
+                    return "";
+                }
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 return new StreamReader(response.GetResponseStream()).ReadToEnd();
@@ -1082,15 +1091,23 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             else
             {
                 //POST
-                var request = (HttpWebRequest)WebRequest.Create(URL);
-                var data = Encoding.Default.GetBytes(postData);
-                request.Method = "POST";
-                request.ContentType = "application/x-www-form-urlencoded";
-                request.ContentLength = data.Length;
-                Stream stream = request.GetRequestStream();
-                stream.Write(data, 0, data.Length);
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                return new StreamReader(response.GetResponseStream()).ReadToEnd();
+                try
+                {
+                    var request = (HttpWebRequest)WebRequest.Create(URL);
+                    var data = Encoding.Default.GetBytes(postData);
+                    request.Method = "POST";
+                    request.ContentType = "application/x-www-form-urlencoded";
+                    request.ContentLength = data.Length;
+                    Stream stream = request.GetRequestStream();
+                    stream.Write(data, 0, data.Length);
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    return new StreamReader(response.GetResponseStream()).ReadToEnd();
+                }
+                catch (Exception eee)
+                {
+                    m_log.Error("ERROR AT POST REQUEST TO " + URL + "\n" + postData + " \n" + eee.Message);
+                    return "";
+                }
             }
         }
 

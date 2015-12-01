@@ -329,6 +329,7 @@ namespace OpenSim.Region.Framework.Scenes
             get { return (RootPart.Flags & PrimFlags.Physics) != 0; }
         }
 
+
         /// <summary>
         /// Is this scene object temporary?
         /// </summary>
@@ -2535,47 +2536,59 @@ namespace OpenSim.Region.Framework.Scenes
                 RootPart.ScheduleTerseUpdate(); // send a stop information
             }
         }
-        
-        public void rotLookAt(Quaternion target, float strength, float damping)
+
+        public void RotLookAt(Quaternion target, float strength, float damping)
         {
+            if(IsDeleted)
+                return;
+
+            // non physical is handle in LSL api
+            if(!UsesPhysics || IsAttachment)
+                return;
+
             SceneObjectPart rootpart = m_rootPart;
             if (rootpart != null)
             {
-                if (IsAttachment)
+/* physics still doesnt suport this
+                if (rootpart.PhysActor != null)
                 {
-                /*
-                    ScenePresence avatar = m_scene.GetScenePresence(rootpart.AttachedAvatar);
-                    if (avatar != null)
-                    {
-                    Rotate the Av?
-                    } */
+                    rootpart.PhysActor.APIDTarget = new Quaternion(target.X, target.Y, target.Z, target.W);
+                    rootpart.PhysActor.APIDStrength = strength;
+                    rootpart.PhysActor.APIDDamping = damping;
+                    rootpart.PhysActor.APIDActive = true;
                 }
-                else
-                {
-                    if (rootpart.PhysActor != null)
-                    {									// APID must be implemented in your physics system for this to function.
-                        rootpart.PhysActor.APIDTarget = new Quaternion(target.X, target.Y, target.Z, target.W);
-                        rootpart.PhysActor.APIDStrength = strength;
-                        rootpart.PhysActor.APIDDamping = damping;
-                        rootpart.PhysActor.APIDActive = true;
-                    }
-                }
+*/
+                // so do it in rootpart
+                rootpart.RotLookAt(target, strength, damping);
             }
         }
 
-        public void stopLookAt()
+       public void StartLookAt(Quaternion target, float strength, float damping)
+        {
+            if(IsDeleted)
+                return;
+
+            // non physical is done by LSL APi
+            if(!UsesPhysics || IsAttachment)
+                return;
+
+            if (m_rootPart != null)
+                m_rootPart.RotLookAt(target, strength, damping);
+        }
+
+        public void StopLookAt()
         {
             SceneObjectPart rootpart = m_rootPart;
             if (rootpart != null)
             {
                 if (rootpart.PhysActor != null)
-                {							// APID must be implemented in your physics system for this to function.
+                {
                     rootpart.PhysActor.APIDActive = false;
                 }
-            }
-        
-        }
 
+                rootpart.StopLookAt();
+            }
+        }
         /// <summary>
         /// Uses a PID to attempt to clamp the object on the Z axis at the given height over tau seconds.
         /// </summary>
@@ -2726,12 +2739,14 @@ namespace OpenSim.Region.Framework.Scenes
                 }
             }
 
+            // while physics doesn't suports LookAt, we do it in RootPart
+            if (!IsSelected)
+                RootPart.UpdateLookAt();
+
             SceneObjectPart[] parts = m_parts.GetArray();
             for (int i = 0; i < parts.Length; i++)
             {
                 SceneObjectPart part = parts[i];
-                if (!IsSelected)
-                    part.UpdateLookAt();
                 part.SendScheduledUpdates();
             }
         }

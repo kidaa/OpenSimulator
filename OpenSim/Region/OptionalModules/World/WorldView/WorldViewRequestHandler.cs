@@ -49,8 +49,7 @@ namespace OpenSim.Region.OptionalModules.World.WorldView
         protected WorldViewModule m_WorldViewModule;
         protected Object m_RequestLock = new Object();
 
-        public WorldViewRequestHandler(WorldViewModule fmodule, string rid)
-                : base("GET", "/worldview/" + rid)
+        public WorldViewRequestHandler(WorldViewModule fmodule, string rid) : base("GET", "/worldview/" + rid)
         {
             m_WorldViewModule = fmodule;
         }
@@ -132,8 +131,9 @@ namespace OpenSim.Region.OptionalModules.World.WorldView
                 height = Convert.ToInt32(request["height"]);
                 usetex = Convert.ToBoolean(request["usetex"]);
             }
-            catch
+            catch(Exception e2)
             {
+                m_log.Error(e2.Message);
                 return new Byte[0];
             }
 

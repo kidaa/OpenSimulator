@@ -741,7 +741,7 @@ namespace OpenSim.Framework
             int oldsizex, int oldsizey, int newsizex, int newsizey)
         {
             // we still need to make sure we see new region  1stNeighbors
-
+            drawdist--;
             oldx *= Constants.RegionSize;
             newx *= Constants.RegionSize;
             if (oldx + oldsizex + drawdist < newx)
@@ -3126,6 +3126,7 @@ namespace OpenSim.Framework
 
     }
 
+/*  don't like this code
     public class DoubleQueue<T> where T:class
     {
         private Queue<T> m_lowQueue = new Queue<T>();
@@ -3237,7 +3238,7 @@ namespace OpenSim.Framework
             }
         }
     }
-
+*/
     public class BetterRandom
     {
         private const int BufferSize = 1024;  // must be a multiple of 4

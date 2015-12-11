@@ -355,11 +355,11 @@ namespace OpenSim.Services.HypergridService
 
 
             //Make the grid not aviable from outsite with a random reason
-            if (m_hiddenReasonClosedGrid == true)
+            if (m_hiddenReasonClosedGrid == true && account == null)
             {
                 List<String> randomReason = new List<String>(); 
                 randomReason.Add("Destination does not allow visitors with your viewer version");
-                randomReason.Add("Your source grid run an to old opensimulator version");
+                randomReason.Add("Your source grid run an old version of opensimulator");
                 randomReason.Add("Unable to verify identity");
                 randomReason.Add("Unable to fetch assets");
 

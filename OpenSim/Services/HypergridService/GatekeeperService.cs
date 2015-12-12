@@ -69,6 +69,7 @@ namespace OpenSim.Services.HypergridService
         private static UUID m_ScopeID;
         private static bool m_AllowTeleportsToAnyRegion;
         private static bool m_hiddenReasonClosedGrid;
+        private static List<String> m_hiddenReasonClosedGridExaption;
         private static string m_ExternalName;
         private static Uri m_Uri;
         private static GridRegion m_DefaultGatewayRegion;
@@ -100,6 +101,18 @@ namespace OpenSim.Services.HypergridService
                 //m_WelcomeMessage = serverConfig.GetString("WelcomeMessage", "Welcome to OpenSim!");
                 m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean("AllowTeleportsToAnyRegion", true);
                 m_hiddenReasonClosedGrid = serverConfig.GetBoolean("HiddenClosedGrid", false);
+
+                string agentListExaptions = serverConfig.GetString("HiddenClosedGridExceptions", String.Empty);
+                if (agentListExaptions.Length > 0)
+                {
+                    foreach (string uuidl in agentListExaptions.Split(','))
+                    {
+                        string uuid = uuidl.Trim();
+                        m_hiddenReasonClosedGridExaption.Add(uuid);
+                    }
+                }
+
+
                 m_ExternalName = Util.GetConfigVarFromSections<string>(config, "GatekeeperURI",
                     new string[] { "Startup", "Hypergrid", "GatekeeperService" }, String.Empty);
                 m_ExternalName = serverConfig.GetString("ExternalName", m_ExternalName);
@@ -357,17 +370,24 @@ namespace OpenSim.Services.HypergridService
             //Make the grid not aviable from outsite with a random reason
             if (m_hiddenReasonClosedGrid == true && account == null)
             {
-                List<String> randomReason = new List<String>(); 
-                randomReason.Add("Destination does not allow visitors with your viewer version");
-                randomReason.Add("Your source grid run an old version of opensimulator");
-                randomReason.Add("Unable to verify identity");
-                randomReason.Add("Unable to fetch assets");
+                if (!m_hiddenReasonClosedGridExaption.Contains(aCircuit.AgentID.ToString()))
+                {
+                    List<String> randomReason = new List<String>();
+                    randomReason.Add("Destination does not allow visitors with your viewer version");
+                    randomReason.Add("Your source grid run an old version of opensimulator");
+                    randomReason.Add("Unable to verify identity");
+                    randomReason.Add("Unable to fetch assets");
 
-                Random rnd = new Random();
-                int r = rnd.Next(randomReason.Count);
-                reason = randomReason[r];
-                m_log.InfoFormat("[GATEKEEPER SERVICE]: denied login for user {0} with a random reason", aCircuit.Name);
-                return false;
+                    Random rnd = new Random();
+                    int r = rnd.Next(randomReason.Count);
+                    reason = randomReason[r];
+                    m_log.InfoFormat("[GATEKEEPER SERVICE]: denied login for user {0} with a random reason", aCircuit.Name);
+                    return false;
+                }
+                else
+                {
+                    m_log.InfoFormat("[GATEKEEPER SERVICE]: Allow login for {0} despite random access restriction", aCircuit.Name);
+                }
             }
 
 

@@ -65,11 +65,13 @@ namespace OpenSim.Services.HypergridService
         private static bool m_ForeignAgentsAllowed = true;
         private static List<string> m_ForeignsAllowedExceptions = new List<string>();
         private static List<string> m_ForeignsDisallowedExceptions = new List<string>();
-
+        private static List<String> m_ClosedGridExaptionList = new List<string>();
+        private static List<String> m_ClosedGridExaptionListReason = new List<string>();
+        
         private static UUID m_ScopeID;
         private static bool m_AllowTeleportsToAnyRegion;
-        private static bool m_hiddenReasonClosedGrid;
-        private static List<String> m_hiddenReasonClosedGridExaption;
+        private static bool m_ClosedGrid;
+
         private static string m_ExternalName;
         private static Uri m_Uri;
         private static GridRegion m_DefaultGatewayRegion;
@@ -100,17 +102,28 @@ namespace OpenSim.Services.HypergridService
                 UUID.TryParse(scope, out m_ScopeID);
                 //m_WelcomeMessage = serverConfig.GetString("WelcomeMessage", "Welcome to OpenSim!");
                 m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean("AllowTeleportsToAnyRegion", true);
-                m_hiddenReasonClosedGrid = serverConfig.GetBoolean("HiddenClosedGrid", false);
+                m_ClosedGrid = serverConfig.GetBoolean("ClosedGrid", false);
 
-                string agentListExaptions = serverConfig.GetString("HiddenClosedGridExceptions", String.Empty);
-                if (agentListExaptions.Length > 0)
+                string ClosedGridExaption = serverConfig.GetString("ClosedGridExceptions", String.Empty);
+                if (ClosedGridExaption.Length > 0)
                 {
-                    foreach (string uuidl in agentListExaptions.Split(','))
+                    foreach (string uuidl in ClosedGridExaption.Split(','))
                     {
                         string uuid = uuidl.Trim();
-                        m_hiddenReasonClosedGridExaption.Add(uuid);
+                        m_ClosedGridExaptionList.Add(uuid);
                     }
                 }
+
+                string ClosedGridExaptionReason = serverConfig.GetString("ClosedGridReasons", "unable to enter grid");
+                if (ClosedGridExaption.Length > 0)
+                {
+                    foreach (string uuidl in ClosedGridExaption.Split(','))
+                    {
+                        string uuid = uuidl.Trim();
+                        m_ClosedGridExaptionListReason.Add(uuid);
+                    }
+                }
+                
 
 
                 m_ExternalName = Util.GetConfigVarFromSections<string>(config, "GatekeeperURI",
@@ -368,19 +381,13 @@ namespace OpenSim.Services.HypergridService
 
 
             //Make the grid not aviable from outsite with a random reason
-            if (m_hiddenReasonClosedGrid == true && account == null)
+            if (m_ClosedGrid == true && account == null)
             {
-                if (!m_hiddenReasonClosedGridExaption.Contains(aCircuit.AgentID.ToString()))
+                if (!m_ClosedGridExaptionList.Contains(aCircuit.AgentID.ToString()))
                 {
-                    List<String> randomReason = new List<String>();
-                    randomReason.Add("Destination does not allow visitors with your viewer version");
-                    randomReason.Add("Your source grid run an old version of opensimulator");
-                    randomReason.Add("Unable to verify identity");
-                    randomReason.Add("Unable to fetch assets");
-
-                    Random rnd = new Random();
-                    int r = rnd.Next(randomReason.Count);
-                    reason = randomReason[r];
+                    Random randomReason = new Random();
+                    int randomReasonNumber = randomReason.Next(m_ClosedGridExaptionListReason.Count);
+                    reason = randomReason[randomReasonNumber];
                     m_log.InfoFormat("[GATEKEEPER SERVICE]: denied login for user {0} with a random reason", aCircuit.Name);
                     return false;
                 }

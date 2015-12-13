@@ -117,7 +117,7 @@ namespace OpenSim.Services.HypergridService
                 string ClosedGridExaptionReason = serverConfig.GetString("ClosedGridReasons", "unable to enter grid");
                 if (ClosedGridExaption.Length > 0)
                 {
-                    foreach (string uuidl in ClosedGridExaption.Split(','))
+                    foreach (string uuidl in ClosedGridExaptionReason.Split(','))
                     {
                         string uuid = uuidl.Trim();
                         m_ClosedGridExaptionListReason.Add(uuid);

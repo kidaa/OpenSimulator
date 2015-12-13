@@ -387,7 +387,7 @@ namespace OpenSim.Services.HypergridService
                 {
                     Random randomReason = new Random();
                     int randomReasonNumber = randomReason.Next(m_ClosedGridExaptionListReason.Count);
-                    reason = randomReason[randomReasonNumber];
+                    reason = m_ClosedGridExaptionListReason[randomReasonNumber];
                     m_log.InfoFormat("[GATEKEEPER SERVICE]: denied login for user {0} with a random reason", aCircuit.Name);
                     return false;
                 }

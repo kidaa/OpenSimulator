@@ -71,7 +71,7 @@ namespace OpenSim.Framework
                                 (uint)ParcelFlags.CreateGroupObjects | (uint)ParcelFlags.AllowOtherScripts |
                                 (uint)ParcelFlags.SoundLocal;
 
-        private byte _landingType = 0;
+        private byte _landingType = (byte)OpenMetaverse.LandingType.Direct;
         private string _name = "Your Parcel";
         private ParcelStatus _status = ParcelStatus.Leased;
         private int _localID = 0;

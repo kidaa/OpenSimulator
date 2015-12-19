@@ -298,18 +298,29 @@ namespace OpenSim.Region.CoreModules.World.Warp3DMap
         // Add a water plane to the renderer.
         private void CreateWater(WarpRenderer renderer)
         {
-            float waterHeight = (float)m_scene.RegionInfo.RegionSettings.WaterHeight;
-
-            renderer.AddPlane("Water", m_scene.RegionInfo.RegionSizeX * 0.5f);
-            renderer.Scene.sceneobject("Water").setPos(m_scene.RegionInfo.RegionSizeX / 2 - 0.5f,
-                                                       waterHeight,
-                                                       m_scene.RegionInfo.RegionSizeY / 2 - 0.5f);
-
             warp_Material waterColorMaterial = new warp_Material(ConvertColor(WATER_COLOR));
-			waterColorMaterial.setReflectivity(0);  // match water color with standard map module thanks lkalif
+            waterColorMaterial.setReflectivity(0);  // match water color with standard map module thanks lkalif
             waterColorMaterial.setTransparency((byte)((1f - WATER_COLOR.A) * 255f));
             renderer.Scene.addMaterial("WaterColor", waterColorMaterial);
-            renderer.SetObjectMaterial("Water", "WaterColor");
+
+            float waterHeight = (float)m_scene.RegionInfo.RegionSettings.WaterHeight;
+            int regionCountX = (int)m_scene.RegionInfo.RegionSizeX / 256;
+            int regionCountY = (int)m_scene.RegionInfo.RegionSizeY / 256;
+
+            for (int i = 1; i <= regionCountX; i++)
+            {
+                for (int e = 1; e <= regionCountY; e++)
+                {
+                    string water_name = "Water_" + e + "_" + i;
+
+                    int posX = (256 * e) - 128;
+                    int posY = (256 * i) - 128;
+
+                    renderer.AddPlane(water_name, 256);
+                    renderer.Scene.sceneobject(water_name).setPos(posX, waterHeight, posY);
+                    renderer.SetObjectMaterial(water_name, "WaterColor");
+                }
+            }
         }
 
         // Add a terrain to the renderer.

@@ -157,14 +157,9 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 //            m_log.DebugFormat("[LOCAL ASSET SERVICES CONNECTOR]: Synchronously requesting asset {0}", id);
             
             AssetBase asset = null;
-            if (m_Cache != null)
-                asset = m_Cache.Get(id);
-
             if (asset == null)
             {
                 asset = m_AssetService.Get(id);
-                if ((m_Cache != null) && (asset != null))
-                    m_Cache.Cache(asset);
 
 //                if (null == asset)
 //                    m_log.WarnFormat("[LOCAL ASSET SERVICES CONNECTOR]: Could not synchronously find asset with id {0}", id);
@@ -175,28 +170,15 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 
         public AssetBase GetCached(string id)
         {
-//            m_log.DebugFormat("[LOCAL ASSET SERVICES CONNECTOR]: Cache request for {0}", id);
-
-            if (m_Cache != null)
-                return m_Cache.Get(id);
-
             return null;
         }
 
         public AssetMetadata GetMetadata(string id)
         {
             AssetBase asset = null;
-            if (m_Cache != null)
-                asset = m_Cache.Get(id);
-
-            if (asset != null)
-                return asset.Metadata;
-
             asset = m_AssetService.Get(id);
             if (asset != null) 
             {
-                if (m_Cache != null)
-                    m_Cache.Cache(asset);
                 return asset.Metadata;
             }
 
@@ -208,18 +190,9 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 //            m_log.DebugFormat("[LOCAL ASSET SERVICES CONNECTOR]: Requesting data for asset {0}", id);
 
             AssetBase asset = null;
-
-            if (m_Cache != null)
-                asset = m_Cache.Get(id);
-
-            if (asset != null)
-                return asset.Data;
-
             asset = m_AssetService.Get(id);
             if (asset != null)
             {
-                if (m_Cache != null)
-                    m_Cache.Cache(asset);
                 return asset.Data;
             }
 
@@ -232,7 +205,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
                                     
             if (m_Cache != null)
             {
-                AssetBase asset = m_Cache.Get(id);
+                AssetBase asset = null;
 
                 if (asset != null)
                 {
@@ -244,9 +217,6 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 
             return m_AssetService.Get(id, sender, delegate (string assetID, Object s, AssetBase a)
             {
-                if ((a != null) && (m_Cache != null))
-                    m_Cache.Cache(a);
-
 //                if (null == a)
 //                    m_log.WarnFormat("[LOCAL ASSET SERVICES CONNECTOR]: Could not asynchronously find asset with id {0}", id);
 
@@ -262,9 +232,7 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 
         public string Store(AssetBase asset)
         {
-            if (m_Cache != null)
-                m_Cache.Cache(asset);
-            
+            asset.Local = false;
             if (asset.Local)
             {
 //                m_log.DebugFormat(
@@ -286,13 +254,9 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
         public bool UpdateContent(string id, byte[] data)
         {
             AssetBase asset = null;
-            if (m_Cache != null)
-                m_Cache.Get(id);
             if (asset != null)
             {
                 asset.Data = data;
-                if (m_Cache != null)
-                    m_Cache.Cache(asset);
             }
 
             return m_AssetService.UpdateContent(id, data);
@@ -300,9 +264,6 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
 
         public bool Delete(string id)
         {
-            if (m_Cache != null)
-                m_Cache.Expire(id);
-
             return m_AssetService.Delete(id);
         }
     }

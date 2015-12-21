@@ -302,7 +302,7 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
             m_scene.TryGetScenePresence(account.PrincipalID, out SP);
             if (SP == null)
                 return; //Bad people!
-            SP.ControllingClient.SendAlertMessage("Appearance saving in progress...");
+            m_log.Debug("Appearance saving in progress...");
 
             AvatarAppearance appearance = AvatarService.GetAppearance(SP.UUID);
             if (appearance == null)

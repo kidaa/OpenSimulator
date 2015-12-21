@@ -1,4 +1,4 @@
-<Project frameworkVersion="v4_0" name="Region.Modules.AvatarArchive" path="addon-modules/src/AvatarArchive" type="Library">
+<Project frameworkVersion="v4_0" name="OpenSim.Modules.AvatarArchive" path="addon-modules/OpenSim.Modules.AvatarArchive/src" type="Library">
   <Configuration name="Debug">
     <Options>
       <OutputPath>../../../bin</OutputPath>

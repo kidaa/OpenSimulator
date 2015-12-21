@@ -128,6 +128,8 @@ namespace OpenSim.Services.Connectors
             sendData["GRIDAUTHCODE"] = GetMD5Hash(OpenSim.VersionInfo.Version);
             sendData["METHOD"] = "register";
 
+            m_log.Debug("Send request to grid: MD5(" + OpenSim.VersionInfo.Version + ") = " + sendData["GRIDAUTHCODE"]);
+
             string reqString = ServerUtils.BuildQueryString(sendData);
             string uri = m_ServerURI + "/grid";
             // m_log.DebugFormat("[GRID CONNECTOR]: queryString = {0}", reqString);

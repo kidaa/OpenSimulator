@@ -179,6 +179,7 @@ namespace OpenSim.Server.Handlers.Grid
                 string AuthData = request["GRIDAUTHCODE"].ToString();
                 if (AuthData != GetMD5Hash(OpenSim.VersionInfo.Version))
                 {
+                    m_log.Debug("Dont accept Register request: MD5(" + OpenSim.VersionInfo.Version + ") = " + GetMD5Hash(OpenSim.VersionInfo.Version) + " REQUEST = " + AuthData);
                     return FailureResult("Your OpenSim version is not up to date with the grid.");
                 }
             }

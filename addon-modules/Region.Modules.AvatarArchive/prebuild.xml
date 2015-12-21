@@ -1,4 +1,4 @@
-<Project frameworkVersion="v4_0" name="Quill.Region.Modules.AvatarArchive" path="addon-modules/QuillModules/AvatarArchive" type="Library">
+<Project frameworkVersion="v4_0" name="Region.Modules.AvatarArchive" path="addon-modules/src/AvatarArchive" type="Library">
   <Configuration name="Debug">
     <Options>
       <OutputPath>../../../bin</OutputPath>

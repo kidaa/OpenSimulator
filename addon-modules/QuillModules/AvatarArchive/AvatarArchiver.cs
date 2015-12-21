@@ -126,24 +126,7 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
                 return;
             }
             
-            string dir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            string[] filePaths = Directory.GetFiles(dir, "*.aa").Select(Path.GetFileNameWithoutExtension).Select(p => p.Substring(0)).ToArray();
-            m_log.Info("[AvatarArchive] Type Avatar Archive name From List Below\n");
-            for (int i = 0; i < filePaths.Length; ++i)
-            {
-                string path = filePaths[i];
-                Console.WriteLine(System.IO.Path.GetFileName(path));
-            }
-            filename = MainConsole.Instance.CmdPrompt("\nFilename?");
-
-            
-
-            if (cmdparams.Length != 5)
-            {
-                m_log.Info("[AvatarArchive] Not enough parameters!");
-                return;
-            }
-            LoadAvatarArchive(filename, cmdparams[3], cmdparams[4]);
+            LoadAvatarArchive(cmdparams[5], cmdparams[3], cmdparams[4]);
         }
 
         public void LoadAvatarArchive(string FileName, string First, string Last)

@@ -349,7 +349,7 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
                 m_log.Info("[AvatarArchive]: Saving asset " + asset.ID);
                 CreateMetaDataMap(asset.Metadata, assetData);
                 assetData.Add("AssetData", OSD.FromBinary(asset.Data));
-                assetMap.Add(asset.ID, assetData);
+                assetMap.Add(UUID.Random().ToString(), assetData);
             }
             else
             {

@@ -538,7 +538,6 @@ namespace OpenSim.Region.Framework.Scenes
 //        private double m_childReprioritizationDistance = 20.0;
 
 
-        private Timer m_mapGenerationTimer = new Timer();
         private bool m_generateMaptiles;
 
         #endregion Fields
@@ -1064,14 +1063,6 @@ namespace OpenSim.Region.Framework.Scenes
                 if (m_generateMaptiles)
                 {
                     int maptileRefresh = Util.GetConfigVarFromSections<int>(config, "MaptileRefresh", possibleMapConfigSections, 0);
-                    m_log.InfoFormat("[SCENE]: Region {0}, WORLD MAP refresh time set to {1} seconds", RegionInfo.RegionName, maptileRefresh);
-                    if (maptileRefresh != 0)
-                    {
-                        m_mapGenerationTimer.Interval = maptileRefresh * 1000;
-                        m_mapGenerationTimer.Elapsed += RegenerateMaptileAndReregister;
-                        m_mapGenerationTimer.AutoReset = true;
-                        m_mapGenerationTimer.Start();
-                    }
                 }
                 else
                 {

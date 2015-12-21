@@ -801,9 +801,10 @@ namespace OpenSim.Region.Framework.Scenes
 
         public UpdatePrioritizationSchemes UpdatePrioritizationScheme { get; set; }
         public bool IsReprioritizationEnabled { get; set; }
-        public double ReprioritizationInterval { get; set; }
-        public double RootReprioritizationDistance { get; set; }
-        public double ChildReprioritizationDistance { get; set; }
+        public float ReprioritizationInterval { get; set; }
+        public float RootReprioritizationDistance { get; set; }
+        public float ChildReprioritizationDistance { get; set; }
+        private float m_minReprioritizationDistance = 32f;
 
         public AgentCircuitManager AuthenticateHandler
         {
@@ -1181,11 +1182,16 @@ namespace OpenSim.Region.Framework.Scenes
                 IsReprioritizationEnabled
                     = interestConfig.GetBoolean("ReprioritizationEnabled", IsReprioritizationEnabled);
                 ReprioritizationInterval
-                    = interestConfig.GetDouble("ReprioritizationInterval", ReprioritizationInterval);
+                    = interestConfig.GetFloat("ReprioritizationInterval", ReprioritizationInterval);
                 RootReprioritizationDistance
-                    = interestConfig.GetDouble("RootReprioritizationDistance", RootReprioritizationDistance);
+                    = interestConfig.GetFloat("RootReprioritizationDistance", RootReprioritizationDistance);
                 ChildReprioritizationDistance
-                    = interestConfig.GetDouble("ChildReprioritizationDistance", ChildReprioritizationDistance);
+                    = interestConfig.GetFloat("ChildReprioritizationDistance", ChildReprioritizationDistance);
+
+                if(RootReprioritizationDistance < m_minReprioritizationDistance)
+                    RootReprioritizationDistance = m_minReprioritizationDistance;
+                if(ChildReprioritizationDistance < m_minReprioritizationDistance)
+                    ChildReprioritizationDistance = m_minReprioritizationDistance;
 
                 RootTerseUpdatePeriod = interestConfig.GetInt("RootTerseUpdatePeriod", RootTerseUpdatePeriod);
                 ChildTerseUpdatePeriod = interestConfig.GetInt("ChildTerseUpdatePeriod", ChildTerseUpdatePeriod);
@@ -1244,8 +1250,8 @@ namespace OpenSim.Region.Framework.Scenes
             RootRotationUpdateTolerance = 0.1f;
             RootVelocityUpdateTolerance = 0.001f;
             RootPositionUpdateTolerance = 0.05f;
-            RootReprioritizationDistance = 10.0;
-            ChildReprioritizationDistance = 20.0;
+            RootReprioritizationDistance = m_minReprioritizationDistance;
+            ChildReprioritizationDistance = m_minReprioritizationDistance;
 
             m_eventManager = new EventManager();
 
@@ -3031,7 +3037,7 @@ namespace OpenSim.Region.Framework.Scenes
             if (sceneObject.IsAttachmentCheckFull()) // Attachment
             {
                 sceneObject.RootPart.AddFlag(PrimFlags.TemporaryOnRez);
-                sceneObject.RootPart.AddFlag(PrimFlags.Phantom);
+//                sceneObject.RootPart.AddFlag(PrimFlags.Phantom);
 
                 // Don't sent a full update here because this will cause full updates to be sent twice for 
                 // attachments on region crossings, resulting in viewer glitches.
@@ -3063,8 +3069,8 @@ namespace OpenSim.Region.Framework.Scenes
                 else
                 {
                     m_log.DebugFormat("[SCENE]: Attachment {0} arrived and scene presence was not found, setting to temp", sceneObject.UUID);
-                    RootPrim.RemFlag(PrimFlags.TemporaryOnRez);
-                    RootPrim.AddFlag(PrimFlags.TemporaryOnRez);
+//                    RootPrim.RemFlag(PrimFlags.TemporaryOnRez);
+//                    RootPrim.AddFlag(PrimFlags.TemporaryOnRez);
                 }
                 if (sceneObject.OwnerID == UUID.Zero)
                 {

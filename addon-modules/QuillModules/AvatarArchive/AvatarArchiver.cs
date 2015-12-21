@@ -278,8 +278,6 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
 
         protected void HandleSaveAvatarArchive(string module, string[] cmdparams)
         {
-            
-            
             if (cmdparams.Length != 7)
             {
                 m_log.Info("[AvatarArchive] Not enough parameters!");
@@ -335,6 +333,7 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
                     }
                 }
             }
+
             List<AvatarAttachment> attachments = appearance.GetAttachments();
             foreach (AvatarAttachment a in attachments)
             {

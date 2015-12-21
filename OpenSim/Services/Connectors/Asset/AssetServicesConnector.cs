@@ -47,7 +47,6 @@ namespace OpenSim.Services.Connectors
                 MethodBase.GetCurrentMethod().DeclaringType);
 
         private string m_ServerURI = String.Empty;
-        private IImprovedAssetCache m_Cache = null;
         private int m_retryCounter;
         private Dictionary<int, List<AssetBase>> m_retryQueue = new Dictionary<int, List<AssetBase>>();
         private System.Timers.Timer m_retryTimer;
@@ -213,17 +212,14 @@ namespace OpenSim.Services.Connectors
 
         protected void SetCache(IImprovedAssetCache cache)
         {
-            m_Cache = cache;
+            //m_Cache = cache;
         }
 
         public AssetBase Get(string id)
         {
             string uri = MapServer(id) + "/assets/" + id;
 
-            AssetBase asset = null;
-            if (m_Cache != null)
-                asset = m_Cache.Get(id);
-            
+            AssetBase asset = null;           
             if (asset == null || asset.Data == null || asset.Data.Length == 0)
             {
                 // XXX: Commented out for now since this has either never been properly operational or not for some time
@@ -236,9 +232,6 @@ namespace OpenSim.Services.Connectors
 //                        "GET", uri, 0, m_maxAssetRequestConcurrency);
 
                 asset = SynchronousRestObjectRequester.MakeRequest<int, AssetBase>("GET", uri, 0, m_Auth);
-
-                if (m_Cache != null)
-                    m_Cache.Cache(asset);
             }
             return asset;
         }
@@ -247,22 +240,12 @@ namespace OpenSim.Services.Connectors
         {
 //            m_log.DebugFormat("[ASSET SERVICE CONNECTOR]: Cache request for {0}", id);
 
-            if (m_Cache != null)
-                return m_Cache.Get(id);
-
             return null;
         }
 
         public AssetMetadata GetMetadata(string id)
         {
-            if (m_Cache != null)
-            {
-                AssetBase fullAsset = m_Cache.Get(id);
-
-                if (fullAsset != null)
-                    return fullAsset.Metadata;
-            }
-
+            AssetBase fullAsset = null;
             string uri = MapServer(id) + "/assets/" + id + "/metadata";
 
             AssetMetadata asset = SynchronousRestObjectRequester.MakeRequest<int, AssetMetadata>("GET", uri, 0, m_Auth);
@@ -271,14 +254,6 @@ namespace OpenSim.Services.Connectors
 
         public byte[] GetData(string id)
         {
-            if (m_Cache != null)
-            {
-                AssetBase fullAsset = m_Cache.Get(id);
-
-                if (fullAsset != null)
-                    return fullAsset.Data;
-            }
-
             using (RestClient rc = new RestClient(MapServer(id)))
             {
                 rc.AddResourcePath("assets");
@@ -330,9 +305,6 @@ namespace OpenSim.Services.Connectors
                     AssetBase a = SynchronousRestObjectRequester.MakeRequest<int, AssetBase>("GET", uri, 0, 30000, m_Auth);
                     if (a != null)
                     {
-                        if (m_Cache != null)
-                            m_Cache.Cache(a);
-
                         List<AssetRetrievedEx> handlers;
                         lock (m_AssetHandlers)
                         {
@@ -384,8 +356,6 @@ namespace OpenSim.Services.Connectors
             string uri = MapServer(id) + "/assets/" + id;
 
             AssetBase asset = null;
-            if (m_Cache != null)
-                asset = m_Cache.Get(id);
 
             if (asset == null || asset.Data == null || asset.Data.Length == 0)
             {
@@ -479,9 +449,6 @@ namespace OpenSim.Services.Connectors
                 }
             }
 
-            if (m_Cache != null)
-                m_Cache.Cache(asset);
-
             if (asset.Temporary || asset.Local)
             {
                 return asset.ID;
@@ -532,8 +499,6 @@ namespace OpenSim.Services.Connectors
 
                     asset.ID = newID;
 // what about FullID ????
-                    if (m_Cache != null)
-                        m_Cache.Cache(asset);
                 }
             }
             return asset.ID;
@@ -542,9 +507,6 @@ namespace OpenSim.Services.Connectors
         public bool UpdateContent(string id, byte[] data)
         {
             AssetBase asset = null;
-
-            if (m_Cache != null)
-                asset = m_Cache.Get(id);
 
             if (asset == null)
             {
@@ -561,9 +523,6 @@ namespace OpenSim.Services.Connectors
 
             if (SynchronousRestObjectRequester.MakeRequest<AssetBase, bool>("POST", uri, asset, m_Auth))
             {
-                if (m_Cache != null)
-                    m_Cache.Cache(asset);
-
                 return true;
             }
             return false;
@@ -575,8 +534,6 @@ namespace OpenSim.Services.Connectors
 
             if (SynchronousRestObjectRequester.MakeRequest<int, bool>("DELETE", uri, 0, m_Auth))
             {
-                if (m_Cache != null)
-                    m_Cache.Expire(id);
 
                 return true;
             }

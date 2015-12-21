@@ -48,7 +48,6 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
                 MethodBase.GetCurrentMethod().DeclaringType);
 
         private bool m_Enabled = false;
-        private IImprovedAssetCache m_Cache;
 
         public Type ReplaceableInterface 
         {
@@ -109,26 +108,8 @@ namespace OpenSim.Region.CoreModules.ServiceConnectorsOut.Asset
             if (!m_Enabled)
                 return;
 
-            if (m_Cache == null)
-            {
-                m_Cache = scene.RequestModuleInterface<IImprovedAssetCache>();
-
-                // Since we are a shared module and scene data is not
-                // available for every method, the cache must be shared, too
-                //
-                if (!(m_Cache is ISharedRegionModule))
-                    m_Cache = null;
-                else
-                    SetCache(m_Cache);
-
-            }
-
             m_log.InfoFormat("[ASSET CONNECTOR]: Enabled remote assets for region {0}", scene.RegionInfo.RegionName);
 
-            if (m_Cache != null)
-            {
-                m_log.InfoFormat("[ASSET CONNECTOR]: Enabled asset caching for region {0}", scene.RegionInfo.RegionName);
-            }
         }
     }
 }

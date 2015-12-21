@@ -125,7 +125,7 @@ namespace OpenSim.Services.Connectors
             sendData["SCOPEID"] = scopeID.ToString();
             sendData["VERSIONMIN"] = ProtocolVersions.ClientProtocolVersionMin.ToString();
             sendData["VERSIONMAX"] = ProtocolVersions.ClientProtocolVersionMax.ToString();
-            sendData["GRIDAUTHCODE"] = GetMD5Hash(DateTime.Now.ToString("yyyyMM") + "001");
+            sendData["GRIDAUTHCODE"] = GetMD5Hash(OpenSim.VersionInfo.Version);
             sendData["METHOD"] = "register";
 
             string reqString = ServerUtils.BuildQueryString(sendData);

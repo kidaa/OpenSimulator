@@ -6038,8 +6038,12 @@ Environment.Exit(1);
         private void RegenerateMaptile()
         {
             IWorldMapModule mapModule = RequestModuleInterface<IWorldMapModule>();
+            
             if (mapModule != null)
+            {
                 mapModule.GenerateMaptile();
+                mapModule = null;
+            }
         }
 
 //        public void CleanDroppedAttachments()

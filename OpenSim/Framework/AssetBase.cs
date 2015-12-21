@@ -211,8 +211,8 @@ namespace OpenSim.Framework
         /// </summary>
         public bool Local
         {
-            get { return m_metadata.Local; }
-            set { m_metadata.Local = value; }
+            get { return false; }
+            set { m_metadata.Local = false; }
         }
 
         /// <summary>
@@ -347,8 +347,8 @@ namespace OpenSim.Framework
 
         public bool Local
         {
-            get { return m_local; }
-            set { m_local = value; }
+            get { return false; }
+            set { m_local = false; }
         }
 
         public bool Temporary

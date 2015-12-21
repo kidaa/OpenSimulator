@@ -149,7 +149,7 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
             if (SP == null)
                 return; //Bad people!
 
-            SP.ControllingClient.SendAlertMessage("Appearance loading in progress...");
+            m_log.Debug("Appearance loading in progress...");
 
             string FolderNameToLoadInto = "";
 

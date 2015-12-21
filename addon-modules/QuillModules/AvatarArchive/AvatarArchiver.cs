@@ -322,16 +322,31 @@ namespace OpenSim.Region.CoreModules.Avatar.AvatarArchiver
                     WearableItem w = wear[i];
                     if (w.AssetID != UUID.Zero)
                     {
-                        SaveAsset(w.AssetID, assets);
-                        SaveItem(w.ItemID, items);
+                        try
+                        {
+                            SaveAsset(w.AssetID, assets);
+                            SaveItem(w.ItemID, items);
+                        }
+                        catch (Exception e)
+                        {
+                            m_log.Error(e.Message);
+                        }
+
                     }
                 }
             }
             List<AvatarAttachment> attachments = appearance.GetAttachments();
             foreach (AvatarAttachment a in attachments)
             {
-                SaveAsset(a.AssetID, assets);
-                SaveItem(a.ItemID, items);
+                try
+                {
+                    SaveAsset(a.AssetID, assets);
+                    SaveItem(a.ItemID, items);
+                }
+                catch (Exception e)
+                {
+                    m_log.Error(e.Message);
+                }
             }
             map.Add("Body", body);
             map.Add("Assets", assets);

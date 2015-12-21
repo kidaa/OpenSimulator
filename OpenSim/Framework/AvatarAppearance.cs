@@ -60,6 +60,7 @@ namespace OpenSim.Framework
 
         public readonly static byte[] BAKE_INDICES = new byte[] { 8, 9, 10, 11, 19, 20 };
 
+        protected UUID m_owner;
         protected int m_serial = 0;
         protected byte[] m_visualparams;
         protected Primitive.TextureEntry m_texture;
@@ -72,6 +73,12 @@ namespace OpenSim.Framework
         protected float m_avatarAnimOffset = 0;
         protected WearableCacheItem[] m_cacheitems;
         protected bool m_cacheItemsDirty = true;
+
+        public virtual UUID Owner
+        {
+            get { return m_owner; }
+            set { m_owner = value; }
+        }
 
         public virtual int Serial
         {

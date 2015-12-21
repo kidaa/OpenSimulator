@@ -5702,24 +5702,6 @@ namespace OpenSim.Region.Framework.Scenes
         {
             string reason;
 
-            // dont mess with gods
-            if(GodLevel >=  200 || m_scene.Permissions.IsGod(m_uuid))
-                return true;
-
-            // respect region owner and managers
-            if(m_scene.RegionInfo.EstateSettings.IsEstateManagerOrOwner(m_uuid))
-                return true;
-
-            if (!m_scene.RegionInfo.EstateSettings.AllowDirectTeleport)
-            {
-                SceneObjectGroup telehub = null;
-                if (m_scene.RegionInfo.RegionSettings.TelehubObject != UUID.Zero && (telehub = m_scene.GetSceneObjectGroup(m_scene.RegionInfo.RegionSettings.TelehubObject)) != null)
-                {
-                    if(CheckAndAdjustTelehub(telehub, ref pos))
-                        return true;
-                }
-            }
-
             // Honor bans, actually we don't honour them
             if (!m_scene.TestLandRestrictions(UUID, out reason, ref pos.X, ref pos.Y))
                 return false;
@@ -5730,23 +5712,13 @@ namespace OpenSim.Region.Framework.Scenes
                 if (Scene.DebugTeleporting)
                     TeleportFlagsDebug();
 
-                // If we come in via login, landmark or map, we want to
-                // honor landing points. If we come in via Lure, we want
-                // to ignore them.
-                if ((m_teleportFlags & (TeleportFlags.ViaLogin | TeleportFlags.ViaRegionID)) ==
-                                (TeleportFlags.ViaLogin | TeleportFlags.ViaRegionID)
-                        || (m_teleportFlags & adicionalLandPointFlags) != 0)
+                if (land.LandData.LandingType == (byte)LandingType.LandingPoint)
                 {
-                    if (land.LandData.LandingType == (byte)LandingType.LandingPoint &&
-                        land.LandData.UserLocation != Vector3.Zero &&
-                        land.LandData.OwnerID != m_uuid )
-                    {
-                        pos = land.LandData.UserLocation;
-                        if(land.LandData.UserLookAt != Vector3.Zero)
-                            lookat = land.LandData.UserLookAt;
-                    }
+                    pos = land.LandData.UserLocation;
+                    lookat = land.LandData.UserLookAt;
                 }
             }
+
             return true;
         }
 

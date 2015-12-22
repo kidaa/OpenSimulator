@@ -443,6 +443,27 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             System.Threading.Thread.Sleep(delay);
         }
 
+        public void osGetScriptPermission(string agent, int perm)
+        {
+            EstateSettings estate = World.RegionInfo.EstateSettings;
+            if (estate.IsEstateManagerOrOwner(m_host.OwnerID))
+            {
+                UUID agentID;
+                if (!UUID.TryParse(agent, out agentID))
+                    return;
+
+                m_host.TaskInventory.LockItemsForWrite(true);
+                m_host.TaskInventory[m_item.ItemID].PermsGranter = agentID;
+                m_host.TaskInventory[m_item.ItemID].PermsMask = perm;
+                m_host.TaskInventory.LockItemsForWrite(false);
+
+                m_ScriptEngine.PostScriptEvent(m_item.ItemID, new EventParams(
+                        "run_time_permissions", new Object[] {
+                        new LSL_Integer(perm) },
+                        new DetectParams[0]));
+            }
+        }
+
         public LSL_Integer osSetTerrainHeight(int x, int y, double val)
         {
             CheckThreatLevel(ThreatLevel.High, "osSetTerrainHeight");

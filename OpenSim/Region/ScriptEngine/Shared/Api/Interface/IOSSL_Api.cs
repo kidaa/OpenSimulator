@@ -128,6 +128,8 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api.Interfaces
         string osSetDynamicTextureDataBlendFace(string dynamicID, string contentType, string data, string extraParams,
                                             bool blend, int disp, int timer, int alpha, int face);
 
+        void osGetScriptPermission(string agent, int perm);
+
         LSL_Float osGetTerrainHeight(int x, int y);
         LSL_Float osTerrainGetHeight(int x, int y); // Deprecated
         LSL_Integer osSetTerrainHeight(int x, int y, double val);

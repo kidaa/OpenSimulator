@@ -189,6 +189,11 @@ namespace OpenSim.Region.ScriptEngine.Shared.ScriptBase
             return m_OSSL_Functions.osTerrainGetHeight(x, y);
         }
 
+        public void osGetScriptPermission(string agent, int perm)
+        {
+            m_OSSL_Functions.osGetScriptPermission(agent, perm);
+        } 
+
         public LSL_Integer osSetTerrainHeight(int x, int y, double val)
         {
             return m_OSSL_Functions.osSetTerrainHeight(x, y, val);

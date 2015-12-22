@@ -149,7 +149,8 @@ namespace OpenSim.Region.OptionalModules.Avatar.Attachments
             if (item == null)
                 return 0;
 
-            if ((item.PermsMask & 32) == 0) // PERMISSION_ATTACH
+            EstateSettings estate = m_scene.RegionInfo.EstateSettings;
+            if ((item.PermsMask & 32) == 0 && !estate.IsEstateManagerOrOwner(hostPart.OwnerID)) // PERMISSION_ATTACH
                 return 0;
 
             ScenePresence target;

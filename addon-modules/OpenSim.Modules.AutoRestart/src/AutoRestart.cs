@@ -8,6 +8,10 @@ using log4net;
 using System.Reflection;
 using OpenSim.Region.Framework.Interfaces;
 using System.Timers;
+using Mono.Addins;
+
+[assembly: Addin("AutoRestart", "1.0")]
+[assembly: AddinDependency("OpenSim.Region.Framework", OpenSim.VersionInfo.VersionNumber)]
 
 namespace OpenSim.Modules.AutoRestart
 {

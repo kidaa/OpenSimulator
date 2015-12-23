@@ -15,10 +15,10 @@ using Mono.Addins;
 
 namespace OpenSim.Modules.AutoRestart
 {
-    class AutoRestart : INonSharedRegionModule 
+    class AutoRestart : ISharedRegionModule 
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private Scene m_scene;
+        private List<Scene> m_scene = new List<Scene>();
         private Timer m_timer;
         private int m_restartCounter = 0;
 
@@ -26,12 +26,18 @@ namespace OpenSim.Modules.AutoRestart
 
         public void RegionLoaded(Scene scene)
         {
-            m_scene = scene;
+            m_scene.Add(scene);
         }
 
         public void AddRegion(Scene scene)
         {
-            m_scene = scene;
+            m_scene.Add(scene);
+
+            m_log.Info("[AutoRestart] ENABLE AUTO RESTART FOR EVERY 24 HOURS !!!");
+
+            m_timer = new Timer(3600000);
+            m_timer.Elapsed += new ElapsedEventHandler(timerEvent);
+            m_timer.Start();
         }
 
         public void RemoveRegion(Scene scene)
@@ -41,11 +47,7 @@ namespace OpenSim.Modules.AutoRestart
 
         public void Initialise(IConfigSource config)
         {
-            m_log.Info("[AutoRestart] ENABLE AUTO RESTART FOR EVERY 24 HOURS !!!");
-            
-            m_timer = new Timer(3600000);
-            m_timer.Elapsed += new ElapsedEventHandler(timerEvent);
-            m_timer.Start();
+
         }
 
         public void timerEvent(object sender, ElapsedEventArgs e)
@@ -56,15 +58,20 @@ namespace OpenSim.Modules.AutoRestart
             }
             else
             {
-                if (m_scene.GetRootAgentCount() == 0)
+
+                int agentCount = 0;
+
+                foreach (Scene s in m_scene)
                 {
-                    m_scene.Backup(true);
-                    Environment.Exit(0);
+                    if (s.GetRootAgentCount() != 0)
+                    {
+                        agentCount = agentCount + s.GetRootAgentCount();
+                        s.Backup(true);
+                    }                    
                 }
-                else
-                {
-                    m_restartCounter = 0;
-                }
+
+                if (agentCount == 0)Environment.Exit(0);
+                m_restartCounter = 0;
             }
         }
 

@@ -1123,6 +1123,10 @@ namespace OpenSim.Region.Framework.Scenes
         /// delays that crossing.
         /// </remarks>
         
+        // constants for physics position search
+        const float PhysSearchHeight = 600f;
+        const float PhysMinSkipGap = 50f;
+        const int PhysNumberCollisions = 30;
 
         // only in use as part of completemovement
         // other uses need fix
@@ -1186,16 +1190,6 @@ namespace OpenSim.Region.Framework.Scenes
             if (gm != null)
                 Grouptitle = gm.GetGroupTitle(m_uuid);
 
-
-            if ((m_teleportFlags & TeleportFlags.ViaHGLogin) != 0)
-            {
-                // The avatar is arriving from another grid. This means that we may have changed the
-                // avatar's name to or from the special Hypergrid format ("First.Last @grid.example.com").
-                // Unfortunately, due to a viewer bug, viewers don't always show the new name.
-                // But we have a trick that can force them to update the name anyway.
-//                ForceViewersUpdateName();
-            }
-
             m_log.DebugFormat("[MakeRootAgent] Grouptitle: {0}ms", Util.EnvironmentTickCountSubtract(ts));
 
             RegionHandle = m_scene.RegionInfo.RegionHandle;
@@ -1205,9 +1199,10 @@ namespace OpenSim.Region.Framework.Scenes
 
             if (ParentID == 0)
             {
-                if(!CheckAndAdjustLandingPoint(ref pos, ref lookat))
+                bool positionChanged = false;
+                if(!CheckAndAdjustLandingPoint(ref pos, ref lookat, ref positionChanged ))
                 {
-                m_log.DebugFormat("[SCENE PRESENCE MakeRootAgent]: houston we have a problem.. {0}({1} got here banned",Name, UUID);
+                    m_log.DebugFormat("[SCENE PRESENCE MakeRootAgent]: houston we have a problem.. {0}({1} got here banned",Name, UUID);
                 }
 
                 if (pos.X < 0f || pos.Y < 0f
@@ -1228,14 +1223,81 @@ namespace OpenSim.Region.Framework.Scenes
                         pos.Y = m_scene.RegionInfo.RegionSizeY - 0.5f;
                 }
 
-                float localAVHeight = 1.56f;
-                if (Appearance.AvatarHeight > 0)
-                    localAVHeight = Appearance.AvatarHeight;
+                float groundHeight = m_scene.GetGroundHeight(pos.X, pos.Y) + .01f;
+                float physTestHeight;
 
-                float newPosZ = m_scene.GetGroundHeight(pos.X, pos.Y) + .01f;
-                newPosZ += 0.5f * localAVHeight;
-                if (newPosZ > pos.Z)
-                    pos.Z = newPosZ;
+                if(PhysSearchHeight < groundHeight + 100f)
+                    physTestHeight = groundHeight + 100f;
+                else
+                    physTestHeight = PhysSearchHeight;
+
+                float localAVHalfHeight = 0.8f;
+                if (Appearance != null && Appearance.AvatarHeight > 0)
+                    localAVHalfHeight = 0.5f * Appearance.AvatarHeight;
+
+                groundHeight += localAVHalfHeight;
+                if (groundHeight > pos.Z)
+                    pos.Z = groundHeight;
+
+                bool checkPhysics = !positionChanged &&
+                        m_scene.SupportsRayCastFiltered() &&
+                        pos.Z < physTestHeight &&
+                        ((m_teleportFlags & (TeleportFlags.ViaLogin | TeleportFlags.ViaRegionID)) ==
+                            (TeleportFlags.ViaLogin | TeleportFlags.ViaRegionID)
+                        || (m_teleportFlags & TeleportFlags.ViaLocation) != 0
+                        || (m_teleportFlags & TeleportFlags.ViaHGLogin) != 0);
+
+                if(checkPhysics)
+                {
+                    // land check was done above
+                    RayFilterFlags rayfilter = RayFilterFlags.BackFaceCull;
+                        rayfilter |= RayFilterFlags.PrimsNonPhantomAgents;
+
+                    int physcount = PhysNumberCollisions;
+
+                    float dist = physTestHeight - groundHeight + localAVHalfHeight;
+                    
+                    Vector3 direction = new Vector3(0f, 0f, -1f);
+                    Vector3 RayStart = pos;
+                    RayStart.Z = physTestHeight;
+
+                    List<ContactResult> physresults =
+                            (List<ContactResult>)m_scene.RayCastFiltered(RayStart, direction, dist, physcount, rayfilter);
+                    if (physresults != null && physresults.Count > 0)
+                    {
+                        float dest = physresults[0].Pos.Z;
+
+                        if(physresults.Count > 1)
+                        {
+                            physresults.Sort(delegate(ContactResult a, ContactResult b)
+                            {
+                                return a.Depth.CompareTo(b.Depth);
+                            });
+
+                            int sel = 0;
+                            int count = physresults.Count;
+                            float curd = physresults[0].Depth;
+                            float nextd = curd + PhysMinSkipGap;
+                            float maxDepth = dist - pos.Z;
+                            for(int i = 1; i < count; i++)
+                            {
+                                curd = physresults[i].Depth;
+                                if(curd >= nextd)
+                                {
+                                    sel = i;
+                                    if(curd >= maxDepth)
+                                        break;
+                                }
+                                nextd = curd + PhysMinSkipGap;
+                            }
+                            dest = physresults[sel].Pos.Z;
+                        }
+
+                        dest += localAVHalfHeight;
+                        if(dest > pos.Z)
+                            pos.Z = dest;
+                    }
+                }
 
                 AbsolutePosition = pos;
 
@@ -1903,12 +1965,6 @@ namespace OpenSim.Region.Framework.Scenes
 
                 if (!IsChildAgent)
                 {
-
-                    // ValidateAndSendAppearanceAndAgentData();
-
-                    // do it here in line 
-                    // so sequence is clear
-
                     // verify baked textures and cache
                     bool cachedbaked = false;
 
@@ -2411,7 +2467,7 @@ namespace OpenSim.Region.Framework.Scenes
                             // The UseClientAgentPosition is set if parcel ban is forcing the avatar to move to a
                             // certain position.  It's only check for tolerance on returning to that position is 0.2
                             // rather than 1, at which point it removes its force target.
-                            if (HandleMoveToTargetUpdate(agentData.UseClientAgentPosition ? 0.2 : 1, ref agent_control_v3))
+                            if (HandleMoveToTargetUpdate(agentData.UseClientAgentPosition ? 0.2f : 1f, ref agent_control_v3))
                                 update_movementflag = true;
                         }
                     }
@@ -2587,31 +2643,55 @@ namespace OpenSim.Region.Framework.Scenes
         /// </remarks>
         /// <param value="agent_control_v3">Cumulative agent movement that this method will update.</param>
         /// <returns>True if movement has been updated in some way.  False otherwise.</returns>
-        public bool HandleMoveToTargetUpdate(double tolerance, ref Vector3 agent_control_v3)
+        public bool HandleMoveToTargetUpdate(float tolerance, ref Vector3 agent_control_v3)
         {
 //            m_log.DebugFormat("[SCENE PRESENCE]: Called HandleMoveToTargetUpdate() for {0}", Name);
 
             bool updated = false;
-
+ 
             Vector3 LocalVectorToTarget3D = MoveToPositionTarget - AbsolutePosition;
 
 //            m_log.DebugFormat(
 //                "[SCENE PRESENCE]: bAllowUpdateMoveToPosition {0}, m_moveToPositionInProgress {1}, m_autopilotMoving {2}",
 //                allowUpdate, m_moveToPositionInProgress, m_autopilotMoving);
 
-            double distanceToTarget = LocalVectorToTarget3D.Length();
+            float distanceToTarget;
+            if(Flying && !LandAtTarget)
+            {
+                distanceToTarget = LocalVectorToTarget3D.Length();
+            }
+            else
+            {
+                Vector3 hdist = LocalVectorToTarget3D;
+                hdist.Z = 0;
+                distanceToTarget = hdist.Length();
+            }
 
-//                        m_log.DebugFormat(
-//                            "[SCENE PRESENCE]: Abs pos of {0} is {1}, target {2}, distance {3}",
-//                            Name, AbsolutePosition, MoveToPositionTarget, distanceToTarget);
+            // m_log.DebugFormat(
+            //      "[SCENE PRESENCE]: Abs pos of {0} is {1}, target {2}, distance {3}",
+            //           Name, AbsolutePosition, MoveToPositionTarget, distanceToTarget);
 
             // Check the error term of the current position in relation to the target position
             if (distanceToTarget <= tolerance)
             {
                 // We are close enough to the target
+                Velocity = Vector3.Zero;
                 AbsolutePosition = MoveToPositionTarget;
+                if (Flying)
+                {
+                if (LandAtTarget)
+                    Flying = false;
+
+                // A horrible hack to stop the avatar dead in its tracks rather than having them overshoot
+                // the target if flying.
+                // We really need to be more subtle (slow the avatar as it approaches the target) or at
+                // least be able to set collision status once, rather than 5 times to give it enough
+                // weighting so that that PhysicsActor thinks it really is colliding.
+                for (int i = 0; i < 5; i++)
+                    IsColliding = true;
+                }
                 ResetMoveToTarget();
-                updated = true;
+                return false;
             }
             else
             {
@@ -2624,8 +2704,6 @@ namespace OpenSim.Region.Framework.Scenes
                     // to such forces, but the following simple approach seems to works fine.
 
                     LocalVectorToTarget3D = LocalVectorToTarget3D * Quaternion.Inverse(Rotation); // change to avatar coords
-                    // Ignore z component of vector
-//                        Vector3 LocalVectorToTarget2D = new Vector3((float)(LocalVectorToTarget3D.X), (float)(LocalVectorToTarget3D.Y), 0f);
 
                     LocalVectorToTarget3D.Normalize();
 
@@ -2715,6 +2793,7 @@ namespace OpenSim.Region.Framework.Scenes
             }
 
             return updated;
+//                AddNewMovement(agent_control_v3);
         }
 
         /// <summary>
@@ -2751,6 +2830,7 @@ namespace OpenSim.Region.Framework.Scenes
                 || pos.Z < 0)
                 return;
      
+            float terrainHeight;
             Scene targetScene = m_scene;
             // Get terrain height for sub-region in a megaregion if necessary
         	if (regionCombinerModule != null)
@@ -2763,18 +2843,15 @@ namespace OpenSim.Region.Framework.Scenes
                     return;
                 UUID target_regionID = target_region.RegionID;             
                 SceneManager.Instance.TryGetScene(target_region.RegionID, out targetScene);
+                terrainHeight = (float)targetScene.Heightmap[(int)(pos.X % regionSize.X), (int)(pos.Y % regionSize.Y)];
             }
-
-            float terrainHeight = (float)targetScene.Heightmap[(int)(pos.X % regionSize.X), (int)(pos.Y % regionSize.Y)];
+            else
+                terrainHeight = m_scene.GetGroundHeight(pos.X, pos.Y);
+            
             // dont try to land underground
-            terrainHeight += Appearance.AvatarHeight / 2;
+            terrainHeight += Appearance.AvatarHeight * 0.5f + 0.2f;
 
-            pos.Z = Math.Max(terrainHeight, pos.Z);
-
-            // Fudge factor.  It appears that if one clicks "go here" on a piece of ground, the go here request is
-            // always slightly higher than the actual terrain height.
-            // FIXME: This constrains NPC movements as well, so should be somewhere else.
-            if (pos.Z - terrainHeight < 0.2)
+            if(terrainHeight > pos.Z)
                 pos.Z = terrainHeight;
 
 //            m_log.DebugFormat(
@@ -2783,7 +2860,7 @@ namespace OpenSim.Region.Framework.Scenes
                      
             if (noFly)
                 Flying = false;
-            else if (pos.Z > terrainHeight + Appearance.AvatarHeight / 2 || Flying)
+            else if (pos.Z > terrainHeight || Flying)
                 Flying = true;
 
             LandAtTarget = landAtTarget;
@@ -2805,9 +2882,9 @@ namespace OpenSim.Region.Framework.Scenes
             Rotation = Quaternion.CreateFromEulers(angle);
 //            m_log.DebugFormat("[SCENE PRESENCE]: Body rot for {0} set to {1}", Name, Rotation);
             
-            Vector3 agent_control_v3 = new Vector3();
-            HandleMoveToTargetUpdate(1, ref agent_control_v3);
-            AddNewMovement(agent_control_v3);
+            Vector3 control = Vector3.Zero;
+            if(HandleMoveToTargetUpdate(1f, ref control))
+                AddNewMovement(control);
         }
 
         /// <summary>
@@ -3454,40 +3531,59 @@ namespace OpenSim.Region.Framework.Scenes
 
         #region Overridden Methods
 
+       const float ROTATION_TOLERANCE = 0.01f;
+       const float VELOCITY_TOLERANCE = 0.1f;
+       const float LOWVELOCITYSQ = 0.1f;
+       const float POSITION_LARGETOLERANCE = 5f;
+       const float POSITION_SMALLTOLERANCE = 0.05f;
+
         public override void Update()
         {
-            const float ROTATION_TOLERANCE = 0.01f;
-            const float VELOCITY_TOLERANCE = 0.001f;
-            const float POSITION_TOLERANCE = 0.05f;
+            if(IsChildAgent || IsDeleted)
+                return;
 
-            if (IsChildAgent == false)
+            CheckForBorderCrossing();
+
+            if (IsInTransit || IsLoggingIn)
+                return;
+
+            if(MovingToTarget)
             {
-                CheckForBorderCrossing();
+                Vector3 control = Vector3.Zero;
+                if(HandleMoveToTargetUpdate(1f, ref control))
+                    AddNewMovement(control);
+            }
 
-                if (IsInTransit)
-                    return;
+            if (Appearance.AvatarSize != m_lastSize)
+                SendAvatarDataToAllAgents();
 
-                // NOTE: Velocity is not the same as m_velocity. Velocity will attempt to
-                // grab the latest PhysicsActor velocity, whereas m_velocity is often
-                // storing a requested force instead of an actual traveling velocity
-                if (Appearance.AvatarSize != m_lastSize && !IsLoggingIn)
-                    SendAvatarDataToAllAgents();
+            if (!IsSatOnObject)
+            {
+                // this does need to be more complex later
+                Vector3 vel = Velocity;
+                Vector3 dpos = m_pos - m_lastPosition;
+                if(     Math.Abs(vel.X - m_lastVelocity.X) > VELOCITY_TOLERANCE ||
+                        Math.Abs(vel.Y - m_lastVelocity.Y) > VELOCITY_TOLERANCE ||
+                        Math.Abs(vel.Z - m_lastVelocity.Z) > VELOCITY_TOLERANCE ||
 
-                if (!IsSatOnObject && (
-                    !Rotation.ApproxEquals(m_lastRotation, ROTATION_TOLERANCE) ||
-                    !Velocity.ApproxEquals(m_lastVelocity, VELOCITY_TOLERANCE) ||
-                    !m_pos.ApproxEquals(m_lastPosition, POSITION_TOLERANCE)))
+                        Math.Abs(m_bodyRot.X - m_lastRotation.X) > ROTATION_TOLERANCE ||
+                        Math.Abs(m_bodyRot.Y - m_lastRotation.Y) > ROTATION_TOLERANCE ||
+                        Math.Abs(m_bodyRot.Z - m_lastRotation.Z) > ROTATION_TOLERANCE ||
+
+                        Math.Abs(dpos.X) > POSITION_LARGETOLERANCE ||
+                        Math.Abs(dpos.Y) > POSITION_LARGETOLERANCE ||
+                        Math.Abs(dpos.Z) > POSITION_LARGETOLERANCE ||
+ 
+                        (  (Math.Abs(dpos.X) > POSITION_SMALLTOLERANCE ||
+                            Math.Abs(dpos.Y) > POSITION_SMALLTOLERANCE ||
+                            Math.Abs(dpos.Z) > POSITION_SMALLTOLERANCE)
+                            && vel.LengthSquared() < LOWVELOCITYSQ 
+                        ))
                 {
                     SendTerseUpdateToAllClients();
-
-                    // Update the "last" values
-                    m_lastPosition = m_pos;
-                    m_lastRotation = Rotation;
-                    m_lastVelocity = Velocity;
                 }
-
-                CheckForSignificantMovement(); // sends update to the modules.
             }
+            CheckForSignificantMovement();
         }
 
         #endregion
@@ -3576,50 +3672,16 @@ namespace OpenSim.Region.Framework.Scenes
             }
         }
 
-
-        // vars to support reduced update frequency when velocity is unchanged
-        private Vector3 lastVelocitySentToAllClients = Vector3.Zero;
-        private Vector3 lastPositionSentToAllClients = Vector3.Zero;
-        private int lastTerseUpdateToAllClientsTick = Util.EnvironmentTickCount();
-
         /// <summary>
         /// Send a location/velocity/accelleration update to all agents in scene
         /// </summary>
         public void SendTerseUpdateToAllClients()
         {
-            int currentTick = Util.EnvironmentTickCount();
-
-            // Decrease update frequency when avatar is moving but velocity is
-            // not changing.
-            // If there is a mismatch between distance travelled and expected
-            // distance based on last velocity sent and velocity hasnt changed,
-            // then send a new terse update
-
-            float timeSinceLastUpdate = (currentTick - lastTerseUpdateToAllClientsTick) * 0.001f;
-
-            Vector3 expectedPosition = lastPositionSentToAllClients + lastVelocitySentToAllClients * timeSinceLastUpdate;
-
-            float distanceError = Vector3.Distance(OffsetPosition, expectedPosition);
-
-            float speed = Velocity.Length();
-            float velocityDiff = Vector3.Distance(lastVelocitySentToAllClients, Velocity);
-
-            // assuming 5 ms. worst case precision for timer, use 2x that 
-            // for distance error threshold
-            float distanceErrorThreshold = speed * 0.01f;
-
-            if (speed < 0.01f // allow rotation updates if avatar position is unchanged
-                || Math.Abs(distanceError) > distanceErrorThreshold
-                || velocityDiff > 0.01f) // did velocity change from last update?
-            {
-                lastVelocitySentToAllClients = Velocity;
-                lastTerseUpdateToAllClientsTick = currentTick;
-                lastPositionSentToAllClients = OffsetPosition;
-
- //                Console.WriteLine("Scheduled update for {0} in {1}", Name, Scene.Name);
-//                m_scene.ForEachClient(SendTerseUpdateToClient);
-                m_scene.ForEachScenePresence(SendTerseUpdateToAgent);
-            }
+            m_scene.ForEachScenePresence(SendTerseUpdateToAgent);
+            // Update the "last" values
+            m_lastPosition = m_pos;
+            m_lastRotation = m_bodyRot;
+            m_lastVelocity = Velocity;
             TriggerScenePresenceUpdated();
         }
 
@@ -5569,7 +5631,7 @@ namespace OpenSim.Region.Framework.Scenes
         const TeleportFlags TeleHubTPFlags = TeleportFlags.ViaLogin 
                     | TeleportFlags.ViaHGLogin | TeleportFlags.ViaLocation;
 
-        private bool CheckAndAdjustTelehub(SceneObjectGroup telehub, ref Vector3 pos)
+        private bool CheckAndAdjustTelehub(SceneObjectGroup telehub, ref Vector3 pos, ref bool positionChanged)
         {
             // forcing telehubs on any tp that reachs this
             if ((m_teleportFlags & TeleHubTPFlags) != 0 ||
@@ -5587,6 +5649,7 @@ namespace OpenSim.Region.Framework.Scenes
                         pos = teleHubPosition;
                         if(land.IsEitherBannedOrRestricted(UUID))
                             return false;
+                        positionChanged = true;
                         return true;
                     }
                     else
@@ -5651,6 +5714,7 @@ namespace OpenSim.Region.Framework.Scenes
 
                         if(!selected)
                             return false;
+                        positionChanged = true;
                         return true;
 
                     default:
@@ -5684,10 +5748,12 @@ namespace OpenSim.Region.Framework.Scenes
                         if(closest < 0)
                         {
                             pos = spawnPoints[0].GetLocation(teleHubPosition, teleHubRotation);
+                            positionChanged = true;
                             return false;
                         }
 
                         pos = spawnPoints[closest].GetLocation(teleHubPosition, teleHubRotation);
+                        positionChanged = true;
                         return true;
                 }
             }
@@ -5698,14 +5764,8 @@ namespace OpenSim.Region.Framework.Scenes
                     TeleportFlags.ViaLocation | TeleportFlags.ViaHGLogin;
 
        // Modify landing point based on telehubs or parcel restrictions.
-        private bool CheckAndAdjustLandingPoint(ref Vector3 pos, ref Vector3 lookat)
+        private bool CheckAndAdjustLandingPoint(ref Vector3 pos, ref Vector3 lookat, ref bool positionChanged)
         {
-            string reason;
-
-            // Honor bans, actually we don't honour them
-            if (!m_scene.TestLandRestrictions(UUID, out reason, ref pos.X, ref pos.Y))
-                return false;
-
             ILandObject land = m_scene.LandChannel.GetLandObject(pos.X, pos.Y);
             if (land != null)
             {

@@ -675,7 +675,10 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
 
         public void DetachSingleAttachmentToGround(IScenePresence sp, uint soLocalId)
         {
-            DetachSingleAttachmentToGround(sp, soLocalId, sp.AbsolutePosition, Quaternion.Identity);
+            Vector3 pos = new Vector3(2.5f, 0f, 0f);
+            pos *= ((ScenePresence)sp).Rotation;
+            pos += sp.AbsolutePosition;
+            DetachSingleAttachmentToGround(sp, soLocalId, pos, Quaternion.Identity);
         }
 
         public void DetachSingleAttachmentToGround(IScenePresence sp, uint soLocalId, Vector3 absolutePos, Quaternion absoluteRot)
@@ -737,17 +740,9 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
                 }
 
                 rootPart.RemFlag(PrimFlags.TemporaryOnRez);
-
-                // not physical, not temporary, phaton, not volume detector
-                //  so.UpdatePrimFlags(rootPart.LocalId,false,false,true,rootPart.VolumeDetectActive);
-
-                // but do avoid nasty collisions set it phantom in this drop case
-                // until a better way is found
-                rootPart.AddFlag(PrimFlags.Phantom);
                 
                 so.ApplyPhysics();
 
-                so.HasGroupChanged = true;
                 rootPart.Rezzed = DateTime.Now;
                 so.AttachToBackup();
                 m_scene.EventManager.TriggerParcelPrimCountTainted();
@@ -764,6 +759,7 @@ namespace OpenSim.Region.CoreModules.Avatar.Attachments
 
             // Attach (NULL) stops scripts. We don't want that. Resume them.
             so.ResumeScripts();
+            so.HasGroupChanged = true;
             so.RootPart.ScheduleFullUpdate();
             so.ScheduleGroupForTerseUpdate();
         }

@@ -33,39 +33,91 @@ namespace OpenSim.Modules.JPEGConverter
             foreach (string name in httpRequest.QueryString)
                 request[name] = httpRequest.QueryString[name];
 
-            AssetBase asset = m_JPEGConverter.AssetService.Get(Convert.ToString(request["assetID"]));
+            httpResponse.ContentType = "text/plain";
 
-            try
+            if (m_JPEGConverter.AssetService != null)
             {
-                if (asset.IsTextualAsset)
+                AssetBase asset = m_JPEGConverter.AssetService.Get(Convert.ToString(request["assetID"]));
+
+                if (asset != null)
                 {
-                    OpenMetaverse.Imaging.ManagedImage jpegImageData = new OpenMetaverse.Imaging.ManagedImage(256, 256, OpenMetaverse.Imaging.ManagedImage.ImageChannels.Color);
-
-                    if (OpenMetaverse.Imaging.OpenJPEG.DecodeToImage(asset.Data, out jpegImageData))
+                    try
                     {
-                        httpResponse.ContentType = "image/jpeg";
+                        if (asset.IsTextualAsset)
+                        {
+                            OpenMetaverse.Imaging.ManagedImage jpegImageData = new OpenMetaverse.Imaging.ManagedImage(256, 256, OpenMetaverse.Imaging.ManagedImage.ImageChannels.Color);
 
-                        Stream imageStream = new MemoryStream(jpegImageData.ExportRaw());
-                        Stream saveStream = new MemoryStream(jpegImageData.ExportRaw());
-                        BinaryReader saveStreamReader = new BinaryReader(saveStream);
+                            if (jpegImageData != null)
+                            {
+                                if (OpenMetaverse.Imaging.OpenJPEG.DecodeToImage(asset.Data, out jpegImageData))
+                                {
+                                    Stream imageStream = new MemoryStream(jpegImageData.ExportRaw());
+                                    Stream saveStream = new MemoryStream();
 
-                        System.Drawing.Image image = System.Drawing.Image.FromStream(imageStream);
-                        image.Save(saveStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-                        return saveStreamReader.ReadBytes((int)saveStream.Length);
+                                    if (imageStream != null)
+                                    {
+                                        if (saveStream != null)
+                                        {
+                                            BinaryReader saveStreamReader = new BinaryReader(saveStream);
+
+                                            if (saveStreamReader != null)
+                                            {
+                                                System.Drawing.Image image = System.Drawing.Image.FromStream(imageStream);
+                                                image.Save(saveStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                                                httpResponse.ContentType = "image/jpeg";
+                                                return saveStreamReader.ReadBytes((int)saveStreamReader.BaseStream.Length);
+                                            }
+                                            else
+                                            {
+                                                m_JPEGConverter.Log.Error("saveStreamReader object is a null object");
+                                                return GetBytes("ERROR");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            m_JPEGConverter.Log.Error("saveStream object is a null object");
+                                            return GetBytes("ERROR");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        m_JPEGConverter.Log.Error("imageStream object is a null object");
+                                        return GetBytes("ERROR");
+                                    }
+                                }
+                                else
+                                {
+                                    m_JPEGConverter.Log.Error("ERROR AT DECODE IMAGE");
+                                    return GetBytes("ERROR");
+                                }
+                            }
+                            else
+                            {
+                                m_JPEGConverter.Log.Error("jpegImageData object is a null object");
+                                return GetBytes("ERROR");
+                            }
+                        }
+                        else
+                        {
+                            return GetBytes("ERROR - NOT A TEXTUR");
+                        }
                     }
-
-                    httpResponse.ContentType = "text/plain";
-                    return GetBytes("ERROR - NOT A TEXTUR");
+                    catch (Exception e)
+                    {
+                        m_JPEGConverter.Log.Error(e);
+                        return GetBytes(e.Message);
+                    }
                 }
-
-                httpResponse.ContentType = "text/plain";
-                return GetBytes("ERROR");
+                else
+                {
+                    m_JPEGConverter.Log.Error("AssetBase object is a null object");
+                    return GetBytes("ERROR");
+                }
             }
-            catch(Exception e)
+            else
             {
-                m_JPEGConverter.Log.Error(e);
-                httpResponse.ContentType = "text/plain";
-                return GetBytes(e.Message);
+                m_JPEGConverter.Log.Error("Asset server object is a null object");
+                return GetBytes("ERROR");
             }
         }
     }

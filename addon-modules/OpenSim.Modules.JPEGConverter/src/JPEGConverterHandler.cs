@@ -37,14 +37,23 @@ namespace OpenSim.Modules.JPEGConverter
 
             if (asset.IsTextualAsset)
             {
-                httpResponse.ContentType = "image/jpeg";
-
-                OpenMetaverse.Imaging.ManagedImage jpegImageData;
+                OpenMetaverse.Imaging.ManagedImage jpegImageData = new OpenMetaverse.Imaging.ManagedImage(256, 256, OpenMetaverse.Imaging.ManagedImage.ImageChannels.Color);
 
                 if (OpenMetaverse.Imaging.OpenJPEG.DecodeToImage(asset.Data, out jpegImageData))
                 {
-                    return jpegImageData.ExportRaw();
+                    httpResponse.ContentType = "image/jpeg";
+
+                    Stream imageStream = new MemoryStream(jpegImageData.ExportRaw());
+                    Stream saveStream = new MemoryStream(jpegImageData.ExportRaw());
+                    BinaryReader saveStreamReader = new BinaryReader(saveStream);
+
+                    System.Drawing.Image image = System.Drawing.Image.FromStream(imageStream);
+                    image.Save(saveStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    return saveStreamReader.ReadBytes((int)saveStream.Length);
                 }
+
+                httpResponse.ContentType = "text/plain";
+                return GetBytes("ERROR - NOT A TEXTUR");
             }
 
             httpResponse.ContentType = "text/plain";

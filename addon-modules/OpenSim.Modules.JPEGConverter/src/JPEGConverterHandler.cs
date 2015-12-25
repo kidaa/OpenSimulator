@@ -63,7 +63,7 @@ namespace OpenSim.Modules.JPEGConverter
             }
             catch(Exception e)
             {
-                m_JPEGConverter.Log.Error(e.Message);
+                m_JPEGConverter.Log.Error(e);
                 httpResponse.ContentType = "text/plain";
                 return GetBytes(e.Message);
             }

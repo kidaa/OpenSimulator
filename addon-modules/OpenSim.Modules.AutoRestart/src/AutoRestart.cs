@@ -34,7 +34,7 @@ namespace OpenSim.Modules.AutoRestart
         {
             m_scene.Add(scene);
 
-            m_log.Info("[AutoRestart] ENABLE AUTO RESTART FOR EVERY 24 HOURS !!!");
+            m_log.Info("[AutoRestart] ENABLE AUTO RESTART FOR EVERY 6 HOURS !!!");
 
             m_timer = new Timer(3600000);
             m_timer.Elapsed += new ElapsedEventHandler(timerEvent);
@@ -73,6 +73,7 @@ namespace OpenSim.Modules.AutoRestart
 
                 if (agentCount == 0)Environment.Exit(0);
                 m_restartCounter = 0;
+                m_log.Info("[AutoRestart] REGION IS NOT EMPTRY! MOVE RESTART.");
             }
         }
 

@@ -35,29 +35,38 @@ namespace OpenSim.Modules.JPEGConverter
 
             AssetBase asset = m_JPEGConverter.AssetService.Get(Convert.ToString(request["assetID"]));
 
-            if (asset.IsTextualAsset)
+            try
             {
-                OpenMetaverse.Imaging.ManagedImage jpegImageData = new OpenMetaverse.Imaging.ManagedImage(256, 256, OpenMetaverse.Imaging.ManagedImage.ImageChannels.Color);
-
-                if (OpenMetaverse.Imaging.OpenJPEG.DecodeToImage(asset.Data, out jpegImageData))
+                if (asset.IsTextualAsset)
                 {
-                    httpResponse.ContentType = "image/jpeg";
+                    OpenMetaverse.Imaging.ManagedImage jpegImageData = new OpenMetaverse.Imaging.ManagedImage(256, 256, OpenMetaverse.Imaging.ManagedImage.ImageChannels.Color);
 
-                    Stream imageStream = new MemoryStream(jpegImageData.ExportRaw());
-                    Stream saveStream = new MemoryStream(jpegImageData.ExportRaw());
-                    BinaryReader saveStreamReader = new BinaryReader(saveStream);
+                    if (OpenMetaverse.Imaging.OpenJPEG.DecodeToImage(asset.Data, out jpegImageData))
+                    {
+                        httpResponse.ContentType = "image/jpeg";
 
-                    System.Drawing.Image image = System.Drawing.Image.FromStream(imageStream);
-                    image.Save(saveStream, System.Drawing.Imaging.ImageFormat.Jpeg);
-                    return saveStreamReader.ReadBytes((int)saveStream.Length);
+                        Stream imageStream = new MemoryStream(jpegImageData.ExportRaw());
+                        Stream saveStream = new MemoryStream(jpegImageData.ExportRaw());
+                        BinaryReader saveStreamReader = new BinaryReader(saveStream);
+
+                        System.Drawing.Image image = System.Drawing.Image.FromStream(imageStream);
+                        image.Save(saveStream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        return saveStreamReader.ReadBytes((int)saveStream.Length);
+                    }
+
+                    httpResponse.ContentType = "text/plain";
+                    return GetBytes("ERROR - NOT A TEXTUR");
                 }
 
                 httpResponse.ContentType = "text/plain";
-                return GetBytes("ERROR - NOT A TEXTUR");
+                return GetBytes("ERROR");
             }
-
-            httpResponse.ContentType = "text/plain";
-            return GetBytes("ERROR");
+            catch(Exception e)
+            {
+                m_JPEGConverter.Log.Error(e.Message);
+                httpResponse.ContentType = "text/plain";
+                return GetBytes(e.Message);
+            }
         }
     }
 }

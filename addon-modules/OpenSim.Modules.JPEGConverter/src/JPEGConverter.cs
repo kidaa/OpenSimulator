@@ -32,6 +32,14 @@ namespace OpenSim.Modules.JPEGConverter
             }
         }
 
+        public ILog Log
+        {
+            get
+            {
+                return m_log;
+            }
+        }
+
         public void RegionLoaded(Scene scene)
         {
             if (scene != null)

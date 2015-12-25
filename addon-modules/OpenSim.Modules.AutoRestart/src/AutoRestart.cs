@@ -15,6 +15,7 @@ using Mono.Addins;
 
 namespace OpenSim.Modules.AutoRestart
 {
+    [Extension(Path = "/OpenSim/RegionModules", NodeName = "RegionModule")]
     class AutoRestart : ISharedRegionModule 
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);

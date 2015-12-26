@@ -37,6 +37,7 @@ namespace OpenSim.Framework
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string HomeURL { get; set; }
+        public string DisplayName { get; set; }
         public Dictionary<string, object> ServerURLs { get; set; }
         public bool IsUnknownUser { get; set; }
         public bool HasGridUserTried { get; set; }

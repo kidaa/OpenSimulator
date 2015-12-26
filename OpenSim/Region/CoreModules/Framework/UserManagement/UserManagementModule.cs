@@ -588,6 +588,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                     userdata.Id = uuid;
                     userdata.FirstName = "Unknown";
                     userdata.LastName = "UserUMMAU42";
+                    userdata.DisplayName = userdata.FirstName + " " + userdata.LastName;
                     userdata.HomeURL = string.Empty;
                     userdata.IsUnknownUser = true;
                     userdata.HasGridUserTried = false;
@@ -605,6 +606,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                 {
                     userdata.FirstName = account.FirstName;
                     userdata.LastName = account.LastName;
+                    userdata.DisplayName = account.FirstName + " " + account.LastName;
                     userdata.HomeURL = string.Empty;
                     userdata.IsUnknownUser = false;
                     userdata.HasGridUserTried = true;
@@ -631,6 +633,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                         if (url != string.Empty)
                         {
                             userdata.FirstName = first.Replace(" ", ".") + "." + last.Replace(" ", ".");
+                            userdata.DisplayName = first + " " + last;
                             userdata.HomeURL = url;
                             try
                             {
@@ -664,6 +667,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                 if(!m_UserCache.ContainsKey(uuid))
                 {
                     UserData user = new UserData();
+                    user.DisplayName = first + " " + last;
                     user.Id = uuid;
                     user.FirstName = first;
                     user.LastName = last;
@@ -699,6 +703,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                     oldUser = new UserData();
                     oldUser.HasGridUserTried = false;
                     oldUser.IsUnknownUser = false;
+                    oldUser.DisplayName = first + " " + last;
                     if (homeURL != string.Empty)
                     {
                         oldUser.FirstName = first.Replace(" ", ".") + "." + last.Replace(" ", ".");

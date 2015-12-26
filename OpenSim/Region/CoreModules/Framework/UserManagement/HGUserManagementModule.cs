@@ -147,6 +147,7 @@ namespace OpenSim.Region.CoreModules.Framework.UserManagement
                             ud.Id = userID;
                             ud.FirstName = words[0];
                             ud.LastName = "@" + words[1];
+                            ud.DisplayName = words[0].Replace(".", " ");
                             users.Add(ud);
                             // WARNING! that uriStr is not quite right... it may be missing the / at the end,
                             // which will cause trouble (duplicate entries on some tables). We should

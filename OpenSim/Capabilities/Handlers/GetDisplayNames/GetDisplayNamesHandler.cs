@@ -99,7 +99,7 @@ namespace OpenSim.Capabilities.Handlers
                         OSDMap osdname = new OSDMap();
                         osdname["display_name_next_update"] = OSD.FromDate(DateTime.Now.AddHours(1));
                         osdname["display_name_expires"] = OSD.FromDate(DateTime.Now.AddMonths(1));
-                        osdname["display_name"] = OSD.FromString(UD.FirstName + " " + UD.LastName);
+                        osdname["display_name"] = OSD.FromString(UD.DisplayName);
                         osdname["legacy_first_name"] = UD.FirstName;
                         osdname["legacy_last_name"] = UD.LastName;
                         osdname["username"] = OSD.FromString(UD.FirstName + "." + UD.LastName);
